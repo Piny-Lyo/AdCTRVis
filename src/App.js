@@ -1,24 +1,36 @@
-import logo from './logo.svg';
+import { Col, Row, Card } from 'antd';
 import './App.css';
+import FeatureCorrelation from './components/FeatureCorrelation/FeatureCorrelation';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <Row>
+        <Col span={6}>
+          <Card title="控制面板" style={{ height: '20vh' }}></Card>
+          <Card title="数据概览" style={{ height: '40vh' }}></Card>
+        </Col>
+        <Col span={12}>
+          <Card title="提升树模型" className='top'></Card>
+        </Col>
+        <Col span={6}>
+          <Card title="特征重要性" className='top'></Card>
+        </Col>
+      </Row>
+      <Row>
+        <Col span={6}>
+          <Card title="数据详情" className='bottom'></Card>
+        </Col>
+        <Col span={12}>
+          <Card title="数据流" className='bottom'></Card>
+        </Col>
+        <Col span={6}>
+          <Card title="特征关联" className='bottom'>
+            <FeatureCorrelation />
+          </Card>
+        </Col>
+      </Row>
+    </>
   );
 }
 

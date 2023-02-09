@@ -2,37 +2,32 @@
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.top {
+  height: 60vh;  
+  /* 视口高度（viewprot height）的60% */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.bottom {
+  height: 40vh;  
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.ant-row{
+  /* 防止出现滚轮 */
+  overflow: hidden;
+}
+
+.ant-card-head{
+  /* Card标题栏的高度 */
+  min-height: 35px !important;
+}
+
+.ant-card-body{
+  padding: 0 !important;
+  flex: auto;
+}
+/* 设置card为flex布局；body设为auto，自动填满高度 */
+.ant-card{
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
