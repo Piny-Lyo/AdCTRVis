@@ -1734,6 +1734,7 @@ const allCor = {
     ]
 }
 
+// 类间关联（三个三角形里的数据）+ 代表性类间关联（>0.5的几个）
 const inclassCor = {
     "nodes": [
         {
@@ -1842,13 +1843,29 @@ const inclassCor = {
         }
     ],
     "links": [
-        //  // test ad-user
-        // {
-        //     "source": "age",
-        //     "target": "display_type",
-        //     "value": 0.2
-        // },
-
+        // test ad-user
+        {
+            "source": "net_type",
+            "target": "display_type",
+            "value": -0.53
+        },
+        // test ad-media
+        {
+            "source": "app_first_class",
+            "target": "display_type",
+            "value": 0.61
+        },
+        {
+            "source": "app_score",
+            "target": "display_type",
+            "value": 0.62
+        },
+        // test user-media
+        {
+            "source": "app_first_class",
+            "target": "net_type",
+            "value": -0.36
+        },
         // 
         {
             "source": "industry_name",

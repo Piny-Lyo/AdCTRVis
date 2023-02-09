@@ -57,10 +57,7 @@ function drawFeatureCorrelation(element, width, height, data, tooltip) {
         .join("line")
         .attr("stroke", "#999")
         .attr("stroke-opacity", d => Math.abs(d.value) * 0.6)
-        .attr("stroke-width", d => {
-            console.log(d);
-            return Math.abs(d.value) * 10;
-        })
+        .attr("stroke-width", d => Math.abs(d.value) * 10)
         // link 提示框交互
         .on("mousedown", (event, d) => {
             event.stopPropagation();
@@ -100,9 +97,39 @@ function drawFeatureCorrelation(element, width, height, data, tooltip) {
             tooltip.style("display", "none");
         });
 
+    // 把上面绘制出来的node和link模拟出来（+交互）
     simulation.nodes(nodes).on('tick', ticked);
     simulation.force('link').links(links).distance(d => (1 / (Math.abs(d.value) + 1)) * 80);
 
+    // 图例legend
+    const legeng_data = [
+        { color: color(1), label: "ad" },
+        { color: color(2), label: "user" },
+        { color: color(3), label: "media" }
+    ];
+
+    // 绘制图例
+    const legend = svg.selectAll(".legend")
+        .data(legeng_data)
+        .enter().append("g")
+        .attr("class", "legend")
+        .attr("transform", function (d, i) { return "translate(0," + i * 30 + ")"; });
+
+    legend.append("rect")
+        .attr("x", 10)
+        .attr("y", 10)
+        .attr("width", 20)
+        .attr("height", 15)
+        .style("fill", function (d) { return d.color; });
+
+    legend.append("text")
+        .attr("x", 35)
+        .attr("y", 20)
+        .style("text-anchor", "start")
+        .text(function (d) { return d.label; });
+
+
+    // D3 交互函数
     function ticked() {
         link
             .attr("x1", d => d.source.x)
