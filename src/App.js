@@ -1,36 +1,42 @@
 import { Col, Row, Card } from 'antd';
 import './App.css';
 import FeatureCorrelation from './components/FeatureCorrelation/FeatureCorrelation';
+import FeatureOverview from './components/FeatureOverview/FeatureOverview';
+import { Provider } from "mobx-react";
+import { store } from './store/store';
 
 function App() {
   return (
-    <>
+    <Provider store={store}>
       <Row>
         <Col span={6}>
-          <Card title="控制面板" style={{ height: '20vh' }}></Card>
-          <Card title="数据概览" style={{ height: '40vh' }}></Card>
+          <Card title="Control Panel" style={{ height: '20vh' }}></Card>
+          <Card title="Data Overview" style={{ height: '40vh' }}></Card>
         </Col>
         <Col span={12}>
-          <Card title="提升树模型" className='top'></Card>
+          <Card title="Tree Boosting" className='top'></Card>
         </Col>
         <Col span={6}>
-          <Card title="特征重要性" className='top'></Card>
+          <Card title="Feature Overview" className='top'>
+            <FeatureOverview />
+          </Card>
         </Col>
       </Row>
       <Row>
         <Col span={6}>
-          <Card title="数据详情" className='bottom'></Card>
+          <Card title="Data Detail" className='bottom'></Card>
         </Col>
         <Col span={12}>
-          <Card title="数据流" className='bottom'></Card>
+          <Card title="Data Flow" className='bottom'></Card>
         </Col>
         <Col span={6}>
-          <Card title="特征关联" className='bottom'>
+          <Card title="Feature Correlation" className='bottom'>
             <FeatureCorrelation />
           </Card>
         </Col>
       </Row>
-    </>
+    </Provider>
+
   );
 }
 
