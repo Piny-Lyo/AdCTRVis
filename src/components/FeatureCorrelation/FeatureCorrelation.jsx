@@ -1,8 +1,10 @@
 import * as d3 from 'd3';
+// eslint-disable-next-line
 import { useEffect, useState, useRef, useContext } from 'react';
 // eslint-disable-next-line
 import { allCor, inclassCor } from '../../data/featureCorrelation/featureCorData';
-import './FeatureCorrelation.css';
+import '../Common.css'
+// eslint-disable-next-line
 import { Observer, useLocalObservable, MobXProviderContext } from 'mobx-react';
 import { store as s1 } from '../../store/store';
 
@@ -59,7 +61,7 @@ function FeatureCorrelation() {
             .attr("stroke-width", d => Math.abs(d.value) * 10)
             // link 提示框交互
             .on("mousedown", (event, d) => {
-                // console.log(event, d)
+                console.log(event, d)
                 let coordinates = d3.pointer(event);
                 tooltip
                     .style("left", coordinates[0] + "px")

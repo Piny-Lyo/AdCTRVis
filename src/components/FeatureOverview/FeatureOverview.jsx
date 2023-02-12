@@ -1,9 +1,13 @@
 import { Table, Image } from 'antd';
 import myImage from '../../data/featureOverview/PDP_ICE_demo.png';
 import featureOverviewData from '../../data/featureOverview/featureOverviewData';
+// eslint-disable-next-line
 import { Observer, useLocalObservable, MobXProviderContext } from 'mobx-react';
-import { store as s1 } from '../../store/store';
+// eslint-disable-next-line
 import { useEffect, useContext } from 'react';
+import { store as s1 } from '../../store/store';
+
+
 
 const columns = [
     {
@@ -77,7 +81,7 @@ function FeatureOverview() {
     return (
         <Observer>{() =>
             <Table columns={columns} dataSource={featureOverviewData}
-                size='small' pagination={false} scroll={{ y: 520 }}
+                size='small' pagination={false} scroll={{ y: 500 }}
                 onRow={() => {
                     return {
                         onClick: (event) => { // 点击行

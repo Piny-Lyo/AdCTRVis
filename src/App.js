@@ -2,6 +2,7 @@ import { Col, Row, Card } from 'antd';
 import './App.css';
 import FeatureCorrelation from './components/FeatureCorrelation/FeatureCorrelation';
 import FeatureOverview from './components/FeatureOverview/FeatureOverview';
+import DataOverview from './components/DataOverview/DataOverview';
 import { Provider } from "mobx-react";
 import { store } from './store/store';
 
@@ -11,7 +12,9 @@ function App() {
       <Row>
         <Col span={6}>
           <Card title="Control Panel" style={{ height: '20vh' }}></Card>
-          <Card title="Data Overview" style={{ height: '40vh' }}></Card>
+          <Card title="Data Overview" style={{ height: '40vh' }}>
+            <DataOverview />
+          </Card>
         </Col>
         <Col span={12}>
           <Card title="Tree Boosting" className='top'></Card>

@@ -3,31 +3,32 @@
 }
 
 .top {
-  height: 60vh;  
+  height: 60vh;
   /* 视口高度（viewprot height）的60% */
 }
 
 .bottom {
-  height: 40vh;  
+  height: 40vh;
 }
 
-.ant-row{
+.ant-row {
   /* 防止出现滚轮 */
   overflow: hidden;
 }
 
-.ant-card-head{
+.ant-card-head {
   /* Card标题栏的高度 */
   min-height: 35px !important;
 }
 
-.ant-card-body{
+.ant-card-body {
   padding: 0 !important;
   flex: auto;
 }
+
 /* 设置card为flex布局；body设为auto，自动填满高度 */
-.ant-card{
+.ant-card {
   display: flex;
   flex-direction: column;
+  border-radius: 0;
 }
-
