@@ -11,28 +11,28 @@ function App() {
     <Provider store={store}>
       <Row>
         <Col span={6}>
-          <Card title="Control Panel" style={{ height: '20vh' }}></Card>
-          <Card title="Data Overview" style={{ height: '40vh' }}>
+          <Card title="Control Panel" style={{ height: '15vh' }}></Card>
+          <Card title="Data Overview" style={{ height: '50vh' }}>
             <DataOverview />
           </Card>
         </Col>
-        <Col span={12}>
-          <Card title="Tree Boosting" className='top'></Card>
+        <Col span={13}>
+          <Card title="Tree Boosting and Flow" className='top'></Card>
         </Col>
-        <Col span={6}>
-          <Card title="Feature Overview" className='top'>
+        <Col span={5}>
+          <Card title="Feature Importance" className='top'>
             <FeatureOverview />
           </Card>
         </Col>
       </Row>
       <Row>
         <Col span={6}>
-          <Card title="Data Detail" className='bottom'></Card>
+          <Card title="Data Statistic" className='bottom'></Card>
         </Col>
-        <Col span={12}>
-          <Card title="Data Flow" className='bottom'></Card>
+        <Col span={13}>
+          <Card title="Data List" className='bottom'></Card>
         </Col>
-        <Col span={6}>
+        <Col span={5}>
           <Card title="Feature Correlation" className='bottom'>
             <FeatureCorrelation />
           </Card>

@@ -17,6 +17,7 @@ function FeatureCorrelation() {
     // eslint-disable-next-line
     const [data, setData] = useState(inclassCor);
 
+    console.log('before Cor Effect1', store.selectedFeature)
     useEffect(() => {
         console.log('in Cor Effect1', store.selectedFeature)
         // 获取DOM及其宽高

@@ -46,17 +46,17 @@ function DataOverview() {
                 for (let j = 0; j < i; j++) {
                     sum += testMatixData[j].value;
                 }
-                return `translate(0,${height * (sum / all)})`
+                return `translate(2,${(height - 20) * (sum / all) + 8})` // -20是空出上下，+8是起点位置
             });
 
         matrix.append("rect")
             .attr("width", margin.left)
-            .attr("height", (d, i) => height * (d.value / all))
+            .attr("height", (d, i) => (height - 20) * (d.value / all))
             .style("fill", function (d) { return d.color; });
 
         matrix.append("text")
             .attr("x", 6)
-            .attr("y", (d, i) => height * (d.value / all) / 2)
+            .attr("y", (d, i) => (height - 20) * (d.value / all) / 2)
             .style("text-anchor", "start")
             .text((d) => d.label);
 
@@ -66,7 +66,7 @@ function DataOverview() {
         const legend = svg.append("g")
             .attr("transform", `translate(${margin.left},0)`);
 
-        const gradient = legend.append("defs") //SVG渐进色
+        const gradient = legend.append("defs") //SVG渐进色linearGradient
             .append("linearGradient")
             .attr("id", "gradient")
             .attr("x1", "0%")

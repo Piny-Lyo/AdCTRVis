@@ -50,7 +50,7 @@ const columns = [
         width: '25%',
     },
     {
-        title: 'Importance',
+        title: 'Score',
         dataIndex: 'importance',
         align: 'center',
         sorter: (a, b) => a.importance - b.importance,
@@ -59,9 +59,9 @@ const columns = [
         title: 'PDP and ICE',
         dataIndex: 'name',
         align: 'center',
-        width: '50%',
+        width: '55%',
         render: () => (
-            <Image width={180} src={myImage} />
+            <Image width={200} src={myImage} />
         ),
     },
 ];
@@ -81,7 +81,7 @@ function FeatureOverview() {
     return (
         <Observer>{() =>
             <Table columns={columns} dataSource={featureOverviewData}
-                size='small' pagination={false} scroll={{ y: 500 }}
+                size='small' pagination={false} scroll={{ y: 560 }}
                 onRow={() => {
                     return {
                         onClick: (event) => { // 点击行
