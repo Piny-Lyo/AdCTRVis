@@ -1,8 +1,9 @@
 import { Col, Row, Card } from 'antd';
 import './App.css';
-import FeatureCorrelation from './components/FeatureCorrelation/FeatureCorrelation';
-import FeatureOverview from './components/FeatureOverview/FeatureOverview';
-import DataOverview from './components/DataOverview/DataOverview';
+import FeatureCorrelation from './components/FeatureCorrelation';
+import FeatureOverview from './components/FeatureOverview';
+import DataOverview from './components/DataOverview';
+import DataList from './components/DataList';
 import { Provider } from "mobx-react";
 import { store } from './store/store';
 
@@ -30,7 +31,9 @@ function App() {
           <Card title="Data Statistic" className='bottom'></Card>
         </Col>
         <Col span={13}>
-          <Card title="Data List" className='bottom'></Card>
+          <Card title="Data List" className='bottom'>
+            <DataList />
+          </Card>
         </Col>
         <Col span={5}>
           <Card title="Feature Correlation" className='bottom'>

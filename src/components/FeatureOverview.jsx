@@ -1,11 +1,11 @@
 import { Table, Image } from 'antd';
-import myImage from '../../data/featureOverview/PDP_ICE_demo.png';
-import featureOverviewData from '../../data/featureOverview/featureOverviewData';
+import myImage from '../data/pictures/PDP_ICE_demo.png';
+import featureOverviewData from '../data/featureOverviewData';
 // eslint-disable-next-line
 import { Observer, useLocalObservable, MobXProviderContext } from 'mobx-react';
 // eslint-disable-next-line
 import { useEffect, useContext } from 'react';
-import { store as s1 } from '../../store/store';
+import { store as s1 } from '../store/store';
 
 
 
@@ -72,11 +72,11 @@ const columns = [
 function FeatureOverview() {
     // const store = useContext(MobXProviderContext).store;
     const store = useLocalObservable(() => s1);
-    console.log(store, store.selectedFeature, store.setSelectedFeature);
+    // console.log(store, store.selectedFeature, store.setSelectedFeature);
     // why??? don't work
-    useEffect(() => {
-        console.log('in overview Effect', store.selectedFeature)
-    })
+    // useEffect(() => {
+    //     console.log('in overview Effect', store.selectedFeature)
+    // })
 
     return (
         <Observer>{() =>

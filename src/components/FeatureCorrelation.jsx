@@ -2,11 +2,11 @@ import * as d3 from 'd3';
 // eslint-disable-next-line
 import { useEffect, useState, useRef, useContext } from 'react';
 // eslint-disable-next-line
-import { allCor, inclassCor } from '../../data/featureCorrelation/featureCorData';
-import '../Common.css'
+import { allCor, inclassCor } from '../data/featureCorData';
+import '../styles/common.css'
 // eslint-disable-next-line
 import { Observer, useLocalObservable, MobXProviderContext } from 'mobx-react';
-import { store as s1 } from '../../store/store';
+import { store as s1 } from '../store/store';
 
 function FeatureCorrelation() {
     //const store = useContext(MobXProviderContext).store;
@@ -17,9 +17,10 @@ function FeatureCorrelation() {
     // eslint-disable-next-line
     const [data, setData] = useState(inclassCor);
 
-    console.log('before Cor Effect1', store.selectedFeature)
+    //console.log('before Cor Effect1', store.selectedFeature)
     useEffect(() => {
-        console.log('in Cor Effect1', store.selectedFeature)
+        //console.log('in Cor Effect1', store.selectedFeature)
+
         // 获取DOM及其宽高
         const element = d3.select(elementRef.current);
         const tooltip = d3.select(tooltipRef.current);
