@@ -156,7 +156,7 @@ function DataOverview() {
             .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]]);
 
         const bins = hexbin(data);
-        console.log("bins", bins);
+        //console.log("bins", bins);
 
         // const bincolor = d3.scaleSequential(d3.interpolateBrBG)
         //     .domain([0, d3.max(bins, d => d.length) / 2])
