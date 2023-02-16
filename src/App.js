@@ -5,6 +5,7 @@ import FeatureOverview from './components/FeatureOverview';
 import DataOverview from './components/DataOverview';
 import DataList from './components/DataList';
 import DataStatistic from './components/DataStatistic';
+import TreeBoosting from './components/TreeBoosting';
 import { Provider } from "mobx-react";
 import { store } from './store/store';
 
@@ -19,7 +20,7 @@ function App() {
           </Card>
         </Col>
         <Col span={13}>
-          <Card title="Tree Boosting and Flow" className='top'></Card>
+          <Card title="Tree Boosting and Flow" className='top'><TreeBoosting /></Card>
         </Col>
         <Col span={5}>
           <Card title="Feature Importance" className='top'><FeatureOverview /></Card>

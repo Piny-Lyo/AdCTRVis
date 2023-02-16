@@ -1,7 +1,6 @@
 import * as d3 from 'd3';
 import * as d3_hexbin from 'd3-hexbin'
 import { useEffect, useRef } from 'react';
-import '../styles/common.css'
 import { overviewData } from '../data/overviewData';
 
 

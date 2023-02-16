@@ -3,7 +3,6 @@ import * as d3 from 'd3';
 import { useEffect, useState, useRef, useContext } from 'react';
 // eslint-disable-next-line
 import { allCor, inclassCor } from '../data/featureCorData';
-import '../styles/common.css'
 // eslint-disable-next-line
 import { Observer, useLocalObservable, MobXProviderContext } from 'mobx-react';
 import { store as s1 } from '../store/store';
@@ -101,7 +100,7 @@ function FeatureCorrelation() {
                     .html(d.id)
                     .style("display", "inline-block");
                 selectedNode = event.target;
-                selectedNode.setAttribute("r", 10);
+                selectedNode.setAttribute("r", 11);
 
                 //store.setSelectedFeature(d.id)
                 console.log('in Cor Node', store.selectedFeature);
