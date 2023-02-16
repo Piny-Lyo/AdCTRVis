@@ -88,7 +88,7 @@ function DataStatistic() {
                 .x(d => x(d[0]))
                 .y0(y(0))
                 .y1(d => y(d[1]))
-            //.curve(d3.curveCatmullRom);
+                .curve(d3.curveCatmullRom);
 
             const area_sym = d3.area()
                 .x(d => x(d[0]))
