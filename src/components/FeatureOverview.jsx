@@ -6,6 +6,7 @@ import { Observer, useLocalObservable, MobXProviderContext } from 'mobx-react';
 // eslint-disable-next-line
 import { useEffect, useContext } from 'react';
 import { store as s1 } from '../store/store';
+import { tableData } from '../data/dataList';
 
 
 
@@ -16,33 +17,20 @@ const columns = [
         align: 'center',
         filters: [
             {
-                text: 'Category 1',
-                value: 'Category 1',
-                children: [
-                    {
-                        text: 'Yellow',
-                        value: 'Yellow',
-                    },
-                    {
-                        text: 'Pink',
-                        value: 'Pink',
-                    },
-                ],
+                text: 'Ad',
+                value: 'Ad',
+                children: tableData[0]
             },
             {
-                text: 'Category 2',
-                value: 'Category 2',
-                children: [
-                    {
-                        text: 'Green',
-                        value: 'Green',
-                    },
-                    {
-                        text: 'Black',
-                        value: 'Black',
-                    },
-                ],
+                text: 'User',
+                value: 'User',
+                children: tableData[1]
             },
+            {
+                text: 'Media',
+                value: 'Media',
+                children: tableData[2]
+            }
         ],
         filterMode: 'tree',
         filterSearch: true,

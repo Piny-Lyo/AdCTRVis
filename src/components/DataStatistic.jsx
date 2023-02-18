@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
-import { useEffect, useRef } from 'react';
+import { Radio } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 //import { cat_index, num_index, cat, num } from '../data/dataStatistic';
 import { dataListData } from '../data/dataList';
 
@@ -7,13 +8,19 @@ function DataStatistic() {
     const elementRef = useRef(null);
     const tooltipRef = useRef(null);
 
+    const [value, setValue] = useState(2); //type
+    const onChange = (e) => {
+        console.log('radio checked', e);
+        setValue(e.target.value);
+    };
+
     useEffect(() => {
         // 获取DOM及其宽高
         const element = d3.select(elementRef.current);
         const tooltip = d3.select(tooltipRef.current);
         const rect = elementRef.current.getBoundingClientRect();
         const [width, height] = [rect.width, rect.height];
-        const margin = { top: 30, right: 10, bottom: 0, left: 10 };
+        const margin = { top: 0, right: 10, bottom: 20, left: 10 };
         // 清除已有svg
         if (element.selectAll('svg')) {
             element.selectAll('svg').remove();
@@ -22,24 +29,8 @@ function DataStatistic() {
         const svg = element
             .append('svg')
             .attr("width", width)
-            .attr("height", height);
-
-        // ----------------- Legend--------------------
-        const legend = svg.append("g");
-
-        legend.append("text")
-            .attr("x", width / 5)
-            .attr("y", margin.top + 10)
-            .style("text-anchor", "center")
-            .style("font-size", "medium")
-            .text('Numerical');
-
-        legend.append("text")
-            .attr("x", width / 1.5)
-            .attr("y", margin.top + 10)
-            .style("text-anchor", "center")
-            .style("font-size", "medium")
-            .text('Categorical');
+            .attr("height", height)
+        // .attr("transform", `translate(10,${- height / 6})`);
 
         // --------------小提琴图-----------------
 
@@ -57,19 +48,18 @@ function DataStatistic() {
         }
 
         function drawViolin(i, violin) {
-            const center = [width / 4, margin.top + (height - margin.top) / 2];
+            const center = [width / 4, (height - margin.bottom - margin.top) / 2 - margin.bottom];
 
             // 提取数值列
             let values = data.map(d => d[num_index[i]]);
             // ----------画小提琴背景----------
 
-            const violinWidth = (height - margin.top) / (num_index.length * 2); // 一般的宽度  /18
+            const violinWidth = (height - margin.top - margin.bottom) / (num_index.length * 2); // 一般的宽度  /18
 
             // 定义x轴比例尺
             const x = d3.scaleLinear()
                 .domain([d3.min(values), d3.max(values)])
                 .range([center[0], width / 2 - margin.right]);
-
 
             // 计算核密度估计函数
             const density = kernelDensityEstimator(epanechnikov(3), x.ticks((d3.max(values) - d3.min(values)) * 2))(values);
@@ -206,7 +196,7 @@ function DataStatistic() {
 
         // -------------玫瑰图-------------
         const rose = svg.append("g")
-            .attr("transform", `translate(${3 / 4 * width},${margin.top + (height - margin.top) / 2})`);
+            .attr("transform", `translate(${3 / 4 * width},${(height - margin.bottom - margin.top) / 2 - margin.bottom})`);
 
         // 计算cat数据的频率最高值、频率
         let roseData = [];
@@ -260,12 +250,39 @@ function DataStatistic() {
                 tooltip.style("display", "none");
                 selected.setAttribute("opacity", 1);
             });
-    })
+
+        // ----------------- Legend--------------------
+        const legend = svg.append("g");
+
+        legend.append("text")
+            .attr("x", 65)
+            .attr("y", height - margin.bottom * 2)
+            .style("text-anchor", "center")
+            .style("font-size", "medium")
+            .text('Numerical');
+
+        legend.append("text")
+            .attr("x", width / 2 + 50)
+            .attr("y", height - margin.bottom * 2)
+            .style("text-anchor", "center")
+            .style("font-size", "medium")
+            .text('Categorical');
+    }, [])
 
     return (
-        <div style={{ height: '100%' }} ref={elementRef} >
-            <div className="tooltip" ref={tooltipRef}></div>
-        </div>
+        <>
+            <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                <Radio.Group onChange={onChange} value={value} size='large'>
+                    <Radio value={1}>Ad</Radio>
+                    <Radio value={2}>User</Radio>
+                    <Radio value={3}>Media</Radio>
+                </Radio.Group>
+            </div>
+
+            <div style={{ height: '91%' }} ref={elementRef} >
+                <div className="tooltip" ref={tooltipRef}></div>
+            </div>
+        </>
     );
 }
 

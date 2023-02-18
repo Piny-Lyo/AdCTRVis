@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { useEffect, useRef } from 'react';
-import { treesData, linesData } from '../data/treeInfo';
+import { treesData, linesData, streamData } from '../data/treeModelInfo';
 
 function TreeBoosting() {
     const elementRef = useRef(null);
@@ -22,6 +22,9 @@ function TreeBoosting() {
             .attr("width", width)
             .attr("height", height);
 
+        const textHeight = 20;
+        const color = ['#ffd666', '#ffa39e', '#87e8de'];
+
         // ------------------Draw the Icicles---------------
         const n = treesData.length; // 聚类中心数量
         const treeSvg = svg.append("g");
@@ -34,10 +37,12 @@ function TreeBoosting() {
         for (let i = 0; i < n; i++) {
             let tree = treeSvg.append("g")
                 .attr("transform", `translate(${i / n * width},0)`);
-            drawIcicle(tree, treesData[i].tree_structure);
+            drawIcicle(tree, i);
         }
 
-        function drawIcicle(tree, data) {
+        function drawIcicle(tree, i) {
+            let data = treesData[i].tree_structure
+
             // 绑定数据，并生成层次数据
             let root = d3.hierarchy(data, d => {
                 let children = [];
@@ -87,11 +92,54 @@ function TreeBoosting() {
                     tooltip.style("display", "none");
                     selected.setAttribute("opacity", 1);
                 });
+
+            // Label
+            let hoverText = null;
+            tree.append("text")// const central = 
+                .attr("x", 25)
+                .attr("y", height / 4 + textHeight)
+                .text(`Central: Tree${i}`)
+                .style("cursor", "default")
+                .on("mouseover", (event) => {
+                    // let coordinates = [event.offsetX, event.offsetY]
+                    tooltip
+                        .style("left", xStream(i) + 10 + "px")
+                        .style("top", height / 2 + "px")
+                        .html("Test")
+                        .style("display", "inline-block");
+                    hoverText = event.target;
+                    hoverText.setAttribute("fill", "steelblue");
+                    tree.selectAll("rect")
+                        .attr("fill", (d) => d.height ? color[d.data.split_feature % 3] : "lightgrey") // TODO：分裂特征类别
+
+                    streamSvg.append("line")
+                        .attr("x1", xStream(i))
+                        .attr("y1", 0)
+                        .attr("x2", xStream(i))
+                        .attr("y2", height / 2)
+                        .style("stroke", "black")
+                        .style("stroke-dasharray", "5 5");
+                })
+                .on("mouseout", () => { // mouseleave 不会冒泡；mouseout 会冒泡   
+                    tooltip.style("display", "none");
+                    hoverText.setAttribute("fill", "black");
+                    tree.selectAll("rect")
+                        .attr("fill", (d) => d.height && d.depth ? "lightblue" : "lightgrey") //根和叶子用灰色表示
+                    streamSvg.selectAll("line").remove();
+                });
+
+            tree.append("text")// const cluster = 
+                .attr("x", 22)
+                .attr("y", height / 4 + textHeight * 2)
+                //.attr("fill", "steelblue")
+                .text(`Cluster${i + 1} (nums)`); // TODO: 聚类中心的树index
+
+            // const bbox = cluster.node().getBBox(); 太麻烦了，后面看情况再加
         }
 
         // ------------------Draw the Lines---------------
         const lineSvg = svg.append("g")
-            .attr("transform", `translate(0,${height / 4})`);
+            .attr("transform", `translate(0,${height / 4 + textHeight * 2})`);
 
         const xScale = d3.scaleLinear()
             .domain([0, d3.max(linesData[1], d => d.x)])
@@ -121,17 +169,74 @@ function TreeBoosting() {
             .curve(d3.curveBasis);
 
         lineSvg.append("path")
-            .datum(linesData[1])
+            .datum(linesData[1]) // leaves
             .attr("fill", "lightgrey")
             .attr("fill-opacity", 0.5)
             .attr("d", area);
 
         lineSvg.append("path")
-            .datum(linesData[0])
+            .datum(linesData[0]) //depth
             .attr("fill", "lightblue")
             .attr("fill-opacity", 0.5)
             .attr("d", area);
 
+        lineSvg.append("text")
+            .attr("x", width - 145)
+            .attr("y", height / 8 + textHeight - 5)
+            .style("text-anchor", "center")
+            .text('Tree Sequence(0 ~ n)');
+
+        lineSvg.append("text")
+            .attr("x", 5)
+            .attr("y", yScale(linesData[0][0].y)) //height / 8 - 20
+            .text('Depth');
+
+        lineSvg.append("text")
+            .attr("x", 5)
+            .attr("y", yScale(linesData[1][0].y)) //height / 8 - 5
+            .text('Leaves');
+
+        // ---------------------Stream---------------------------
+        const categories = Object.keys(streamData[0]).slice(1); //  ['ad', 'user', 'media']
+        let streamSvg = svg.append("g")
+            .attr("transform", `translate(0,${height * 3 / 8 + textHeight * 3})`);
+
+        // Define the color scale
+        const colorScale = d3.scaleOrdinal()
+            .domain(categories)
+            .range(color);
+
+        // Define the stack layout
+        const stack = d3.stack()
+            .keys(categories)
+            .offset(d3.stackOffsetWiggle)
+            .order(d3.stackOrderInsideOut)
+        //.order(d3.stackOrderDescending)
+
+        let xStream = d3.scaleLinear()
+            .domain(d3.extent(streamData, d => d.index))
+            .range([0, width]);
+
+        const yStream = d3.scaleLinear()
+            .domain(
+                [d3.min(stack(streamData), d => d3.min(d, d => d[0])),
+                d3.max(stack(streamData), d => d3.max(d, d => d[1]))]) // d3.max(streamData, d => d3.sum(d.values))]);
+            .range([height / 2, 0]);
+
+        // Define the area generator
+        const streamArea = d3.area()
+            .curve(d3.curveBasis)
+            .x(d => xStream(d.data.index))
+            .y0(d => yStream(d[0]))
+            .y1(d => yStream(d[1]));
+
+        // Add the streamgraph layers
+        streamSvg.selectAll("path")
+            .data(stack(streamData))
+            .enter()
+            .append("path")
+            .attr("d", streamArea)
+            .style("fill", d => colorScale(d.key));
     })
 
     return (

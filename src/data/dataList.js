@@ -1,6 +1,6 @@
 const ad = ['task_id', 'material_id', 'creative_type', 'advertiser_id', 'developer_id', 'display_type', 'industry_name', 'display_date']
 
-const app = ['slot_id', 'app_id', 'app_tag', 'app_first_class', 'app_second_class', 'app_size', 'app_release_time', 'app_score']
+const media = ['slot_id', 'app_id', 'app_tag', 'app_first_class', 'app_second_class', 'app_size', 'app_release_time', 'app_score']
 
 const user = ['user_id', 'age', 'city', 'city_rank', 'device_name', 'device_size', 'career', 'gender', 'net_type', 'residence', 'emui_version', 'device_release_time', 'device_price', 'lifecycle', 'membership_grade', 'membership_lifecycle', 'purchase_tag', 'daily_active_time']
 
@@ -11,7 +11,8 @@ let columns = [
         align: 'center'
     }
 ]
-let adChildren = [];
+
+let adTable = [], adSelect = [];
 for (let i = 0; i < ad.length; i++) {
     let obj = {
         title: ad[i],
@@ -19,23 +20,22 @@ for (let i = 0; i < ad.length; i++) {
         align: 'center',
         className: 'ad_col'
     }
-    adChildren.push(obj);
     columns.push(obj);
-}
 
-let appChildren = [];
-for (let i = 0; i < app.length; i++) {
-    let obj = {
-        title: app[i],
-        dataIndex: app[i],
-        align: 'center',
-        className: 'app_col'
+    let objT = {
+        text: ad[i],
+        value: ad[i]
     }
-    appChildren.push(obj);
-    columns.push(obj);
+    adTable.push(objT);
+
+    let objS = {
+        value: ad[i],
+        title: ad[i]
+    }
+    adSelect.push(objS);
 }
 
-let userChildren = [];
+let userTable = [], userSelect = [];
 for (let i = 0; i < user.length; i++) {
     let obj = {
         title: user[i],
@@ -43,29 +43,46 @@ for (let i = 0; i < user.length; i++) {
         align: 'center',
         className: 'user_col'
     }
-    userChildren.push(obj);
     columns.push(obj);
+
+    let objT = {
+        text: user[i],
+        value: user[i]
+    }
+    userTable.push(objT);
+
+    let objS = {
+        value: user[i],
+        title: user[i]
+    }
+    userSelect.push(objS);
 }
 
-// const columns = [
-//     {
-//         title: 'Record ID',
-//         dataIndex: 'key',
-//         align: 'center',
-//     },
-//     {
-//         title: 'Ad',
-//         children: adChildren
-//     },
-//     {
-//         title: 'App',
-//         children: appChildren
-//     },
-//     {
-//         title: 'User',
-//         children: userChildren
-//     }
-// ];
+let mediaTable = [], mediaSelect = [];
+for (let i = 0; i < media.length; i++) {
+    let obj = {
+        title: media[i],
+        dataIndex: media[i],
+        align: 'center',
+        className: 'media_col'
+    }
+    columns.push(obj);
+
+    let objT = {
+        text: media[i],
+        value: media[i]
+    }
+    mediaTable.push(objT);
+
+    let objS = {
+        value: media[i],
+        title: media[i]
+    }
+    mediaSelect.push(objS);
+}
+
+const tableData = [adTable, userTable, mediaTable];
+const selectData = [adSelect, userSelect, mediaSelect];
 
 const dataListData = [
     {
@@ -1920,4 +1937,4 @@ const dataListData = [
     }
 ]
 
-export { dataListData, columns };
+export { dataListData, columns, tableData, selectData };

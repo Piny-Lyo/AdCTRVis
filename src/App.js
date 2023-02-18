@@ -6,6 +6,7 @@ import DataOverview from './components/DataOverview';
 import DataList from './components/DataList';
 import DataStatistic from './components/DataStatistic';
 import TreeBoosting from './components/TreeBoosting';
+import ControlPanel from './components/ControlPanel';
 import { Provider } from "mobx-react";
 import { store } from './store/store';
 
@@ -14,7 +15,7 @@ function App() {
     <Provider store={store}>
       <Row>
         <Col span={6}>
-          <Card title="Control Panel" style={{ height: '15vh' }}></Card>
+          <Card title="Control Panel" style={{ height: '15vh' }}><ControlPanel /></Card>
           <Card title="Data Overview" style={{ height: '50vh' }}>
             <DataOverview />
           </Card>

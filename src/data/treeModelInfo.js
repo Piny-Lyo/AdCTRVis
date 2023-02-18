@@ -23,8 +23,16 @@ const linesData_leaves = [
     { x: 8, y: 9 },
     { x: 9, y: 3 }
 ]
-
 const linesData = [linesData_depth, linesData_leaves]
+
+const streamData = [
+    { index: 0, ad: 10, user: 30, media: 10 },
+    { index: 1, ad: 15, user: 10, media: 30 },
+    { index: 2, ad: 10, user: 15, media: 20 },
+    { index: 3, ad: 25, user: 20, media: 15 },
+    { index: 4, ad: 30, user: 25, media: 20 },
+    { index: 5, ad: 5, user: 35, media: 17 }
+];
 
 const treesData = [
     {
@@ -5194,4 +5202,4 @@ const treesData = [
         }
     }
 ]
-export { treesData, linesData };
+export { treesData, linesData, streamData };
