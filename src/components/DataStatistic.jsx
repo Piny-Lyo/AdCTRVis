@@ -173,7 +173,6 @@ function DataStatistic() {
 
             // tooltip
             violin.on("mouseover", (event) => {
-                //let coordinates = d3.pointer(event);
                 let coordinates = [event.offsetX, event.offsetY]
                 tooltip
                     .style("left", coordinates[0] + "px")
@@ -234,7 +233,6 @@ function DataStatistic() {
             .attr('d', arcs)
             .attr('fill', 'lightblue')
             .on("mouseover", (event, d) => {
-                //let coordinates = d3.pointer(event);
                 let coordinates = [event.offsetX, event.offsetY]
                 tooltip
                     .style("left", coordinates[0] + "px")

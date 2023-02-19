@@ -1,14 +1,9 @@
 import { Table, Image } from 'antd';
 import myImage from '../data/pictures/PDP_ICE_demo.png';
 import featureOverviewData from '../data/featureOverviewData';
-// eslint-disable-next-line
-import { Observer, useLocalObservable, MobXProviderContext } from 'mobx-react';
-// eslint-disable-next-line
-import { useEffect, useContext } from 'react';
-import { store as s1 } from '../store/store';
+import { Observer, useLocalObservable } from 'mobx-react';
+import { store } from '../store/store';
 import { tableData } from '../data/dataList';
-
-
 
 const columns = [
     {
@@ -53,18 +48,9 @@ const columns = [
         ),
     },
 ];
-// const onChange = (pagination, filters, sorter, extra) => {
-//     console.log('params', pagination, filters, sorter, extra);
-// };
-// onChange = { onChange }
+
 function FeatureOverview() {
-    // const store = useContext(MobXProviderContext).store;
-    const store = useLocalObservable(() => s1);
-    // console.log(store, store.selectedFeature, store.setSelectedFeature);
-    // why??? don't work
-    // useEffect(() => {
-    //     console.log('in overview Effect', store.selectedFeature)
-    // })
+    const myStore = useLocalObservable(() => store);
 
     return (
         <Observer>{() =>
@@ -73,16 +59,13 @@ function FeatureOverview() {
                 onRow={() => {
                     return {
                         onClick: (event) => { // 点击行
-                            console.log('event', event, event.target.innerText);
-                            store.setSelectedFeature(event.target.innerText);
-                            //store.selectedFeature = event.target.innerText;
-                            console.log(store.selectedFeature)
+                            const clickedFeature = event.target.innerText;
+                            myStore.setSelectedFeature(clickedFeature);
+                            console.log('selectedFeature:', myStore.selectedFeature);
                         }
                     };
                 }} />}
         </Observer>
     );
-
-
 }
 export default FeatureOverview;

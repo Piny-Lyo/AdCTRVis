@@ -7,12 +7,10 @@ import DataList from './components/DataList';
 import DataStatistic from './components/DataStatistic';
 import TreeBoosting from './components/TreeBoosting';
 import ControlPanel from './components/ControlPanel';
-import { Provider } from "mobx-react";
-import { store } from './store/store';
 
 function App() {
   return (
-    <Provider store={store}>
+    <>
       <Row>
         <Col span={6}>
           <Card title="Control Panel" style={{ height: '15vh' }}><ControlPanel /></Card>
@@ -38,8 +36,7 @@ function App() {
           <Card title="Feature Correlation" className='bottom'><FeatureCorrelation /></Card>
         </Col>
       </Row>
-    </Provider>
-
+    </>
   );
 }
 

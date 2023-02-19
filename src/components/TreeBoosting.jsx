@@ -1,8 +1,25 @@
 import * as d3 from 'd3';
 import { useEffect, useRef } from 'react';
 import { treesData, linesData, streamData } from '../data/treeModelInfo';
+import { Observer, useLocalObservable } from 'mobx-react';
+import { store } from '../store/store';
 
 function TreeBoosting() {
+    const myStore = useLocalObservable(() => store);
+
+    return (
+        <Observer>
+            {() => <ICicle selectedFeature={myStore.selectedFeature} />}
+        </Observer>
+    );
+
+}
+
+export default TreeBoosting;
+
+const color = ['#ffd666', '#ffa39e', '#87e8de'];
+
+function ICicle(props) {
     const elementRef = useRef(null);
     const tooltipRef = useRef(null);
 
@@ -23,9 +40,8 @@ function TreeBoosting() {
             .attr("height", height);
 
         const textHeight = 20;
-        const color = ['#ffd666', '#ffa39e', '#87e8de'];
 
-        // ------------------Draw the Icicles---------------
+        // ------------------Draw the ICicles---------------
         const n = treesData.length; // 聚类中心数量
         const treeSvg = svg.append("g");
 
@@ -56,7 +72,6 @@ function TreeBoosting() {
                 //.sort((a, b) => b.height - a.height || b.internal_count - a.internal_count) // 不能按大小来排序，不然就和特征向量的位置对应不上了。也不该用internal_count，这是该节点下包含的总节点数，会重复计算。
             );
 
-            let selected = null;
             // 生成rect
             tree.selectAll("rect")
                 .data(root.descendants())
@@ -66,6 +81,7 @@ function TreeBoosting() {
                 .attr("height", (d) => d.x1 - d.x0)
                 .attr("fill", (d) => d.height && d.depth ? "lightblue" : "lightgrey") //根和叶子用灰色表示
                 .attr("stroke", "white")
+                .attr("class", 'display_type') // TODO: bind real feature name
                 .on("mouseover", (event, d) => {
                     //console.log(event, d);
                     let coordinates = [event.offsetX, event.offsetY]
@@ -85,12 +101,14 @@ function TreeBoosting() {
                         }
                         )
                         .style("display", "inline-block");
-                    selected = event.target;
-                    selected.setAttribute("opacity", 0.8);
+                    // TODO: Replace: d.data.split_feature % 3 -> type
+                    event.target.setAttribute("fill", color[d.data.split_feature % 3]);
+                    event.target.setAttribute("opacity", 0.8);
                 })
-                .on("mouseout", () => { // mouseleave 不会冒泡；mouseout 会冒泡   
+                .on("mouseout", (event, d) => { // mouseleave 不会冒泡；mouseout 会冒泡   
                     tooltip.style("display", "none");
-                    selected.setAttribute("opacity", 1);
+                    event.target.setAttribute("fill", d.height && d.depth ? "lightblue" : "lightgrey");
+                    event.target.setAttribute("opacity", 1);
                 });
 
             // Label
@@ -220,7 +238,7 @@ function TreeBoosting() {
         const yStream = d3.scaleLinear()
             .domain(
                 [d3.min(stack(streamData), d => d3.min(d, d => d[0])),
-                d3.max(stack(streamData), d => d3.max(d, d => d[1]))]) // d3.max(streamData, d => d3.sum(d.values))]);
+                d3.max(stack(streamData), d => d3.max(d, d => d[1]))])
             .range([height / 2, 0]);
 
         // Define the area generator
@@ -237,13 +255,22 @@ function TreeBoosting() {
             .append("path")
             .attr("d", streamArea)
             .style("fill", d => colorScale(d.key));
-    })
+    }, [])
+
+    // 更改selectedFeature后联动更新相应rect的颜色类别
+    useEffect(() => {
+        const feature = props.selectedFeature;
+        if (feature === 'display_type') {
+            const rect = d3.select(elementRef.current).selectAll('.display_type'); //TODO:${featureType}
+            rect.attr("fill", color[0]);
+        }
+    }, [props])
 
     return (
-        <div style={{ height: '100%' }} ref={elementRef} >
-            <div className="tooltip" ref={tooltipRef}></div>
-        </div>
+        <>
+            <div style={{ height: '100%' }} ref={elementRef} >
+                <div className="tooltip" ref={tooltipRef}></div>
+            </div>
+        </>
     );
 }
-
-export default TreeBoosting;
