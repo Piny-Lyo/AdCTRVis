@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { Radio } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-//import { cat_index, num_index, cat, num } from '../data/dataStatistic';
+//import { cat_index_user, num_index_user, cat, num } from '../data/dataStatistic';
 import { dataListData } from '../data/dataList';
 
 function DataStatistic() {
@@ -37,13 +37,13 @@ function DataStatistic() {
         // 导入数据
         const data = dataListData;
 
-        const cat_index = ['user_id', 'city', 'device_name', 'device_size', 'career', 'gender', 'net_type', 'residence', 'purchase_tag'];
-        const num_index = ['age', 'city_rank', 'emui_version', 'device_release_time', 'device_price', 'lifecycle', 'membership_grade', 'membership_lifecycle', 'daily_active_time']
+        const cat_index_user = ['user_id', 'city', 'device_name', 'device_size', 'career', 'gender', 'net_type', 'residence', 'purchase_tag'];
+        const num_index_user = ['age', 'city_rank', 'emui_version', 'device_release_time', 'device_price', 'lifecycle', 'membership_grade', 'membership_lifecycle', 'daily_active_time']
 
         // 循环画多个小提琴图
         const violins = svg.append("g");
-        for (let i = 0; i < num_index.length; i++) {
-            let violin = violins.append("g").attr("class", num_index[i]);
+        for (let i = 0; i < num_index_user.length; i++) {
+            let violin = violins.append("g").attr("class", num_index_user[i]);
             drawViolin(i, violin);
         }
 
@@ -51,10 +51,10 @@ function DataStatistic() {
             const center = [width / 4, (height - margin.bottom - margin.top) / 2 - margin.bottom];
 
             // 提取数值列
-            let values = data.map(d => d[num_index[i]]);
+            let values = data.map(d => d[num_index_user[i]]);
             // ----------画小提琴背景----------
 
-            const violinWidth = (height - margin.top - margin.bottom) / (num_index.length * 2); // 一般的宽度  /18
+            const violinWidth = (height - margin.top - margin.bottom) / (num_index_user.length * 2); // 一般的宽度  /18
 
             // 定义x轴比例尺
             const x = d3.scaleLinear()
@@ -177,8 +177,8 @@ function DataStatistic() {
                 tooltip
                     .style("left", coordinates[0] + "px")
                     .style("top", coordinates[1] - 50 + "px")
-                    //.html(num_index[i])
-                    .html(num_index[i] + '<br>' +
+                    //.html(num_index_user[i])
+                    .html(num_index_user[i] + '<br>' +
                         'Min: ' + newMin + ' Max:' + newMax + '<br>' +
                         'Q1(25%):' + q1 + '<br>' +
                         'Q2(50%):' + q2 + '<br>' +
@@ -199,13 +199,13 @@ function DataStatistic() {
 
         // 计算cat数据的频率最高值、频率
         let roseData = [];
-        for (let i = 0; i < cat_index.length; i++) {
-            let cat_values = data.map(d => d[cat_index[i]]);
+        for (let i = 0; i < cat_index_user.length; i++) {
+            let cat_values = data.map(d => d[cat_index_user[i]]);
             let groupCount = d3.rollups(cat_values, v => v.length, d => d); //计算每个值及其出现频率 [value, freq]
             let maxFeqIndex = d3.maxIndex(groupCount, d => d[1]); // 找到频率最高的元素对应索引 
             let maxValueFreq = groupCount[maxFeqIndex]; // freq最大的 [value, freq]
             let obj = {
-                name: cat_index[i],
+                name: cat_index_user[i],
                 maxValue: maxValueFreq[0],
                 maxFreq: maxValueFreq[1]
             }
@@ -214,7 +214,7 @@ function DataStatistic() {
 
         // 绘制扇形
         const n = data.length;
-        const angle = Math.PI * 2 / cat_index.length;
+        const angle = Math.PI * 2 / cat_index_user.length;
         const r = width / 4 - margin.right;
 
         const arcs = d3.arc()

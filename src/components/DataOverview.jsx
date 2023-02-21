@@ -1,7 +1,8 @@
 import * as d3 from 'd3';
 import * as d3_hexbin from 'd3-hexbin'
 import { useEffect, useRef } from 'react';
-import { overviewData } from '../data/overviewData';
+import { overviewData } from '../data/dataOverview';
+//import { bins } from '../data/dataOverviewBins';
 
 
 function DataOverview() {
@@ -15,6 +16,7 @@ function DataOverview() {
         // const tooltip = d3.select(tooltipRef.current);
         const rect = elementRef.current.getBoundingClientRect();
         const [width, height] = [rect.width, rect.height];
+        console.log(width, height)
         const margin = ({ top: 30, left: 30, right: 0, bottom: 0 })
         const color = d3.interpolateBrBG;
 
@@ -29,15 +31,18 @@ function DataOverview() {
             .attr("height", height);
 
         // Draw the confusion matrix    
+        const all = data.length;
+        //const all = 1000000;
+
         // const myColor = ['#2ca25f', '#99d8c9', '#8856a7', '#9ebcda', '#f7f7f7'];
         const myColor = [color(0.8), color(0.6), color(0.2), color(0.4)]
         const testMatixData = [
-            { color: myColor[0], label: "TP", value: 400 },
-            { color: myColor[1], label: "FP", value: 200 },
-            { color: myColor[2], label: "TN", value: 300 },
-            { color: myColor[3], label: "FN", value: 100 }
+            { color: myColor[0], label: "TP", value: all / 4 },
+            { color: myColor[1], label: "FP", value: all / 4 },
+            { color: myColor[2], label: "TN", value: all / 4 },
+            { color: myColor[3], label: "FN", value: all / 4 }
         ];
-        const all = data.length;
+
         const matrix = svg.append("g")
             .selectAll("g")
             .data(testMatixData)
@@ -104,7 +109,12 @@ function DataOverview() {
             .attr("y", 30)
             .text('Probability');
 
-        // Draw the t-sne scatter chart       
+
+        // Draw hexbin scatter
+        const scatter = svg.append("g")
+            .attr("transform", `translate(${margin.left - 10},${margin.top - 10})`);
+
+        // //这些代码写在html里了。 myDemo/dataOverview.html
 
         const x = d3.scaleLinear()
             .domain(d3.extent(data, d => d.x)).nice()
@@ -114,62 +124,37 @@ function DataOverview() {
             .domain(d3.extent(data, d => d.y)).nice()
             .range([height - margin.top, margin.top])
 
-        const scatter = svg.append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`);
-
-        // const dot = scatter.append("g")
-        //     .attr("fill", "lightblue")
-        //     .attr("stroke", "white")
-        //     .selectAll("circle")
-        //     .data(data)
-        //     .join("circle")
-        //     .attr("transform", d => `translate(${x(d.x)},${y(d.y)})`)
-        //     .attr("r", 3);
-
-        // const brush = d3.brush()
-        //     .on("start brush end", brushed);
-
-        // scatter.call(brush);
-
-        // function brushed({ selection }) {
-        //     let value = [];
-        //     if (selection) {
-        //         const [[x0, y0], [x1, y1]] = selection;
-        //         value = dot
-        //             .style("fill", "lightgray")
-        //             .filter(d => x0 <= x(d.x) && x(d.x) < x1 && y0 <= y(d.y) && y(d.y) < y1)
-        //             .style("fill", "lightblue")
-        //             .data();
-        //     } else {
-        //         dot.style("fill", "lightblue");
-        //     }
-        //     svg.property("value", value).dispatch("input");
-        // }
-
-        // Draw hexbin scatter
-
         const hexbin = d3_hexbin.hexbin()
             .x(d => x(d.x)) // 如果用d3 hexbin示例的scaleLog比例尺会显示不出来，因为坐标有负数。
             .y(d => y(d.y))
-            .radius(10 * width / (height - 1)) // 10 radius
+            .radius(10) // 10 radius * width / (height - 1)
             .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]]);
 
         const bins = hexbin(data);
-        //console.log("bins", bins);
-
-        // const bincolor = d3.scaleSequential(d3.interpolateBrBG)
-        //     .domain([0, d3.max(bins, d => d.length) / 2])
+        console.log("bins", bins);
 
         scatter.append("g")
-            .attr("stroke", "#000")
-            .attr("stroke-opacity", 0.1)
             .selectAll("path")
             .data(bins)
             .join("path")
             .attr("d", hexbin.hexagon())
+            .attr("stroke", "#000")
+            .attr("stroke-opacity", 0.1)
             .attr("transform", d => `translate(${d.x},${d.y})`)
             .attr("opacity", d => (d.length / all) * bins.length) // 透明度编码数量多少
             .attr("fill", d => color(d.reduce((sum, current) => sum + current.probability, 0) / d.length)); // TODO：hex颜色编码内部节点的预测分数均值。 Done
+
+        // // 先用html计算的情况 100万
+        // scatter.append("g")
+        //     .selectAll("path")
+        //     .data(bins)
+        //     .join("path")
+        //     .attr("d", hexbin.hexagon())
+        //     .attr("stroke", "#000")
+        //     .attr("stroke-opacity", 0.1)
+        //     .attr("transform", d => `translate(${d.x},${d.y})`)
+        //     .attr("opacity", d => (d.length / all) * bins.length) // 透明度编码数量多少
+        //     .attr("fill", d => color(d.meanPro)); // TODO：hex颜色编码内部节点的预测分数均值。 Done
     })
 
     return (
