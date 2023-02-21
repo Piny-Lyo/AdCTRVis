@@ -2,13 +2,18 @@ import { makeAutoObservable } from 'mobx'
 
 class Store {
     selectedFeature = null;
+    keys = null;
 
     constructor() {
         makeAutoObservable(this);
     }
 
-    setSelectedFeature = (featureName) => {
-        this.selectedFeature = featureName;
+    setSelectedFeature = (selectedFeature) => {
+        this.selectedFeature = selectedFeature;
+    }
+
+    setKeys = (keys) => {
+        this.keys = keys;
     }
 }
 

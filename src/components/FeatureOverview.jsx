@@ -1,7 +1,7 @@
 import { Table, Image } from 'antd';
 import myImage from '../data/pictures/PDP_ICE_demo.png';
 import featureOverviewData from '../data/featureOverviewData';
-import { Observer, useLocalObservable } from 'mobx-react';
+import { useLocalObservable } from 'mobx-react';
 import { store } from '../store/store';
 import { tableData } from '../data/dataList';
 
@@ -53,19 +53,17 @@ function FeatureOverview() {
     const myStore = useLocalObservable(() => store);
 
     return (
-        <Observer>{() =>
-            <Table columns={columns} dataSource={featureOverviewData}
-                size='small' pagination={false} scroll={{ y: 560 }}
-                onRow={() => {
-                    return {
-                        onClick: (event) => { // 点击行
-                            const clickedFeature = event.target.innerText;
-                            myStore.setSelectedFeature(clickedFeature);
-                            console.log('selectedFeature:', myStore.selectedFeature);
-                        }
-                    };
-                }} />}
-        </Observer>
+        <Table columns={columns} dataSource={featureOverviewData}
+            size='small' pagination={false} scroll={{ y: 560 }}
+            onRow={() => {
+                return {
+                    onClick: (event) => { // 点击行
+                        const clickedFeature = event.target.innerText;
+                        myStore.setSelectedFeature(clickedFeature);
+                        console.log('selectedFeature:', myStore.selectedFeature);
+                    }
+                };
+            }} />
     );
 }
 export default FeatureOverview;

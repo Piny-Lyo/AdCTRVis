@@ -3,17 +3,20 @@ import * as d3_hexbin from 'd3-hexbin'
 import { useEffect, useRef } from 'react';
 import { overviewData } from '../data/dataOverview';
 //import { bins } from '../data/dataOverviewBins';
+import { useLocalObservable } from 'mobx-react'; //trigger，不用Observer都行
+import { store } from '../store/store';
 
 
 function DataOverview() {
     const elementRef = useRef(null);
     const tooltipRef = useRef(null);
     const data = overviewData;
+    const myStore = useLocalObservable(() => store);
 
     useEffect(() => {
         // 获取DOM及其宽高
         const element = d3.select(elementRef.current);
-        // const tooltip = d3.select(tooltipRef.current);
+        const tooltip = d3.select(tooltipRef.current);
         const rect = elementRef.current.getBoundingClientRect();
         const [width, height] = [rect.width, rect.height];
         console.log(width, height)
@@ -114,8 +117,6 @@ function DataOverview() {
         const scatter = svg.append("g")
             .attr("transform", `translate(${margin.left - 10},${margin.top - 10})`);
 
-        // //这些代码写在html里了。 myDemo/dataOverview.html
-
         const x = d3.scaleLinear()
             .domain(d3.extent(data, d => d.x)).nice()
             .range([margin.left, width - margin.left])
@@ -140,21 +141,42 @@ function DataOverview() {
             .attr("d", hexbin.hexagon())
             .attr("stroke", "#000")
             .attr("stroke-opacity", 0.1)
+            .attr("stroke-width", 1)
             .attr("transform", d => `translate(${d.x},${d.y})`)
-            .attr("opacity", d => (d.length / all) * bins.length) // 透明度编码数量多少
-            .attr("fill", d => color(d.reduce((sum, current) => sum + current.probability, 0) / d.length)); // TODO：hex颜色编码内部节点的预测分数均值。 Done
+            //.attr("opacity", d => (d.length / all) * bins.length * 1.5) // 透明度编码数量多少，有色差！
+            .attr("fill", d => color(d.reduce((sum, current) => sum + current.probability, 0) / d.length)) // TODO：hex颜色编码内部节点的预测分数均值。 Done
+            .on("mouseover", (event, d) => {
+                let coordinates = [event.offsetX, event.offsetY]
+                tooltip
+                    .style("left", coordinates[0] + "px")
+                    .style("top", coordinates[1] + "px")
+                    .html('Nums:' + d.length + '<br>' +
+                        'Mean:' + (d.reduce((sum, current) => sum + current.probability, 0) / d.length).toFixed(2))
+                    .style("display", "inline-block");
+                event.target.setAttribute("opacity", 0.8);
+            })
+            .on("mouseout", (event, d) => { // mouseleave 不会冒泡；mouseout 会冒泡   
+                tooltip.style("display", "none");
+                event.target.setAttribute("opacity", 1);
+            })
+            .on("click", (event, d) => {
+                let indexs = [];
+                d.forEach(e => {
+                    indexs.push(e.index)
+                })
+                //console.log(indexs);
+                myStore.setKeys(indexs);
+                //console.log('myStore.setKeys:', myStore.keys);
 
-        // // 先用html计算的情况 100万
-        // scatter.append("g")
-        //     .selectAll("path")
-        //     .data(bins)
-        //     .join("path")
-        //     .attr("d", hexbin.hexagon())
-        //     .attr("stroke", "#000")
-        //     .attr("stroke-opacity", 0.1)
-        //     .attr("transform", d => `translate(${d.x},${d.y})`)
-        //     .attr("opacity", d => (d.length / all) * bins.length) // 透明度编码数量多少
-        //     .attr("fill", d => color(d.meanPro)); // TODO：hex颜色编码内部节点的预测分数均值。 Done
+                event.target.setAttribute("stroke", "red");
+                event.target.setAttribute("stroke-width", 3);
+                event.target.setAttribute("stroke-opacity", 0.5);
+            })
+            .on("dblclick", (event, d) => {
+                event.target.setAttribute("stroke", "#000");
+                event.target.setAttribute("stroke-width", 1);
+                event.target.setAttribute("stroke-opacity", 0.1);
+            })
     })
 
     return (

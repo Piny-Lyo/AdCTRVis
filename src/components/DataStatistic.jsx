@@ -2,9 +2,25 @@ import * as d3 from 'd3';
 import { Radio } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 //import { cat_index_user, num_index_user, cat, num } from '../data/dataStatistic';
-import { dataListData } from '../data/dataList';
+//import { dataListData } from '../data/dataListData';
+import { data5000 } from '../data/dataListData5000';
+import { Observer, useLocalObservable } from 'mobx-react';
+import { store } from '../store/store';
 
 function DataStatistic() {
+    const myStore = useLocalObservable(() => store);
+
+    return (
+        <Observer>{() =>
+            <Statistic keys={myStore.keys}></Statistic>
+        }
+        </Observer>
+    )
+}
+
+export default DataStatistic;
+
+function Statistic(props) {
     const elementRef = useRef(null);
     const tooltipRef = useRef(null);
 
@@ -13,6 +29,19 @@ function DataStatistic() {
         console.log('radio checked', e);
         setValue(e.target.value);
     };
+
+    // 导入数据
+    //const data = dataListData;
+    const keys = props.keys;
+    let data;
+    if (keys == null) {
+        data = data5000; //初始化，展示全部数据
+    } else {
+        data = [];
+        data5000.forEach(d => {
+            if (keys.includes(d.key)) data.push(d);
+        })
+    }
 
     useEffect(() => {
         // 获取DOM及其宽高
@@ -33,9 +62,6 @@ function DataStatistic() {
         // .attr("transform", `translate(10,${- height / 6})`);
 
         // --------------小提琴图-----------------
-
-        // 导入数据
-        const data = dataListData;
 
         const cat_index_user = ['user_id', 'city', 'device_name', 'device_size', 'career', 'gender', 'net_type', 'residence', 'purchase_tag'];
         const num_index_user = ['age', 'city_rank', 'emui_version', 'device_release_time', 'device_price', 'lifecycle', 'membership_grade', 'membership_lifecycle', 'daily_active_time']
@@ -265,7 +291,7 @@ function DataStatistic() {
             .style("text-anchor", "center")
             .style("font-size", "medium")
             .text('Categorical');
-    }, [])
+    }, [data])
 
     return (
         <>
@@ -283,5 +309,3 @@ function DataStatistic() {
         </>
     );
 }
-
-export default DataStatistic;
