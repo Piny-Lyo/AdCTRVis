@@ -19,9 +19,10 @@ function DataOverview() {
         const tooltip = d3.select(tooltipRef.current);
         const rect = elementRef.current.getBoundingClientRect();
         const [width, height] = [rect.width, rect.height];
-        console.log(width, height)
         const margin = ({ top: 30, left: 30, right: 0, bottom: 0 })
         const color = d3.interpolateBrBG;
+
+        console.log("RGB Test:", color(0), color(1));
 
         // 清除已有svg
         if (element.selectAll('svg')) {
@@ -38,12 +39,12 @@ function DataOverview() {
         //const all = 1000000;
 
         // const myColor = ['#2ca25f', '#99d8c9', '#8856a7', '#9ebcda', '#f7f7f7'];
-        const myColor = [color(0.8), color(0.6), color(0.2), color(0.4)]
+        const myColor = [color(0.8), color(0.6), color(0.4), color(0.2)]
         const testMatixData = [
-            { color: myColor[0], label: "TP", value: all / 4 },
-            { color: myColor[1], label: "FP", value: all / 4 },
-            { color: myColor[2], label: "TN", value: all / 4 },
-            { color: myColor[3], label: "FN", value: all / 4 }
+            { color: myColor[0], label: "TP", value: 4 * all / 8 },
+            { color: myColor[1], label: "FP", value: 2 * all / 8 },
+            { color: myColor[2], label: "FN", value: 1 * all / 8 },
+            { color: myColor[3], label: "TN", value: 1 * all / 8 },
         ];
 
         const matrix = svg.append("g")
@@ -132,13 +133,18 @@ function DataOverview() {
             .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]]);
 
         const bins = hexbin(data);
-        console.log("bins", bins);
+        const max_length = d3.max(bins, d => d.length); // About 50
+        console.log("bins", bins, max_length);
 
         scatter.append("g")
             .selectAll("path")
             .data(bins)
             .join("path")
-            .attr("d", hexbin.hexagon())
+            .attr("d", d => hexbin.hexagon(15 * d.length / max_length))
+            // .attr("d", d => {
+            //     console.log('hexagon', hexbin.hexagon(15))
+            //     return hexbin.hexagon(15 * d.length / max_length)
+            // })
             .attr("stroke", "#000")
             .attr("stroke-opacity", 0.1)
             .attr("stroke-width", 1)

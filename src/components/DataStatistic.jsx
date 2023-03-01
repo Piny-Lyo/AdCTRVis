@@ -63,7 +63,7 @@ function Statistic(props) {
 
         // --------------小提琴图-----------------
 
-        const cat_index_user = ['user_id', 'city', 'device_name', 'device_size', 'career', 'gender', 'net_type', 'residence', 'purchase_tag'];
+        const cat_index_user = ['user_id', 'city', 'purchase_tag', 'device_name', 'device_size', 'career', 'gender', 'residence', 'net_type'];
         const num_index_user = ['age', 'city_rank', 'emui_version', 'device_release_time', 'device_price', 'lifecycle', 'membership_grade', 'membership_lifecycle', 'daily_active_time']
 
         // 循环画多个小提琴图
@@ -78,17 +78,47 @@ function Statistic(props) {
 
             // 提取数值列
             let values = data.map(d => d[num_index_user[i]]);
+
+            // 计算五个统计指标
+            const [min, max] = d3.extent(values);
+            const q1 = d3.quantile(values, 0.25); //下四分位数
+            const q2 = d3.quantile(values, 0.5);
+            const q3 = d3.quantile(values, 0.75); //上四分位数
+
+            const iqr = q3 - q1; // 四分位距（interquartile range, IQR）
+            const minLimit = q1 - 1.5 * iqr; // 下限
+            const maxLimit = q3 + 1.5 * iqr; // 上限
+            const outliers = values.filter(d => d < minLimit || d > maxLimit);
+
+            const newValues = values.filter(d => !outliers.includes(d));
+            const [newMin, newMax] = d3.extent(newValues);
+
+            //console.log(q1, q2, q3, min, max, minLimit, maxLimit, outliers)
+
             // ----------画小提琴背景----------
 
             const violinWidth = (height - margin.top - margin.bottom) / (num_index_user.length * 2); // 一般的宽度  /18
 
             // 定义x轴比例尺
             const x = d3.scaleLinear()
-                .domain([d3.min(values), d3.max(values)])
+                .domain([min, max]) // 原始的数据分布，这些值可能包括异常值
                 .range([center[0], width / 2 - margin.right]);
 
+            // const x = d3.scaleLinear()
+            //     .domain([d3.min([min, minLimit]), d3.max([max, maxLimit])])
+            //     .range([center[0], width / 2 - margin.right]);
+
+            // const xLimit = d3.scaleLinear()
+            //     .domain([minLimit, maxLimit]) // 不含异常值的上下限
+            //     .range([x(minLimit), x(maxLimit)]);
+
             // 计算核密度估计函数
-            const density = kernelDensityEstimator(epanechnikov(3), x.ticks((d3.max(values) - d3.min(values)) * 2))(values);
+            const density = kernelDensityEstimator(epanechnikov(3), x.ticks((max - min) * 2))(values);
+
+            // console.log('values', values);
+            // console.log('density', density);
+
+            // const density = kernelDensityEstimator(epanechnikov(3), x.ticks((d3.max([max, maxLimit]) - d3.min([min, minLimit]))))(values); //改变这个没什么影响
 
             // 定义y轴比例尺
             const y = d3.scaleLinear()
@@ -138,22 +168,6 @@ function Statistic(props) {
 
             //---------绘制中间箱形图---------
 
-            // 计算五个统计指标
-            // const [min, max] = d3.extent(values);
-            const q1 = d3.quantile(values, 0.25); //下四分位数
-            const q2 = d3.quantile(values, 0.5);
-            const q3 = d3.quantile(values, 0.75); //上四分位数
-
-            const iqr = q3 - q1; // 四分位距（interquartile range, IQR）
-            const minLimit = q1 - 1.5 * iqr; // 下限
-            const maxLimit = q3 + 1.5 * iqr; // 上限
-            const outliers = values.filter(d => d < minLimit || d > maxLimit);
-
-            const newValues = values.filter(d => !outliers.includes(d));
-            const [newMin, newMax] = d3.extent(newValues);
-
-            //console.log(q1, q2, q3, min, max, minLimit, maxLimit, outliers)
-
             const boxHeight = violinWidth * 0.5;
             // 绘制箱子
             violin.append("rect")
@@ -171,9 +185,9 @@ function Statistic(props) {
                 .attr("y2", center[1] + boxHeight / 2)
                 .attr("stroke", "grey");
 
-            // 绘制上下边缘 (去除outlier之后的最大最小值)
+            // 绘制上下最值 (去除outlier之后的最大最小值)
             violin.append("line")
-                .attr("x1", x(newMin))
+                .attr("x1", x(newMin)) //minLimit
                 .attr("y1", center[1])
                 .attr("x2", x(q1))
                 .attr("y2", center[1])
@@ -181,7 +195,7 @@ function Statistic(props) {
             violin.append("line")
                 .attr("x1", x(q3))
                 .attr("y1", center[1])
-                .attr("x2", x(newMax))
+                .attr("x2", x(newMax)) //, 换成上限maxLimit会超出去啊。。
                 .attr("y2", center[1])
                 .attr("stroke", "grey");
 
@@ -208,7 +222,7 @@ function Statistic(props) {
                         'Min: ' + newMin + ' Max:' + newMax + '<br>' +
                         'Q1(25%):' + q1 + '<br>' +
                         'Q2(50%):' + q2 + '<br>' +
-                        'Q1(75%):' + q3 + '<br>' +
+                        'Q3(75%):' + q3 + '<br>' +
                         'Outlier:' + outliers.join(','))
                     .style("display", "inline-block");
                 violin.attr("opacity", 0.8); //.attr()方法是D3的，用于d3选择集；Element.setAttribute()方法是js自带的，用于SVG元素的引用
@@ -279,14 +293,14 @@ function Statistic(props) {
         const legend = svg.append("g");
 
         legend.append("text")
-            .attr("x", 65)
+            .attr("x", 80)
             .attr("y", height - margin.bottom * 2)
             .style("text-anchor", "center")
             .style("font-size", "medium")
             .text('Numerical');
 
         legend.append("text")
-            .attr("x", width / 2 + 50)
+            .attr("x", width / 2 + 80)
             .attr("y", height - margin.bottom * 2)
             .style("text-anchor", "center")
             .style("font-size", "medium")

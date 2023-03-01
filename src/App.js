@@ -27,7 +27,7 @@ function App() {
       </Row>
       <Row>
         <Col span={6}>
-          <Card title="Data Statistic" className='bottom'><DataStatistic /></Card>
+          <Card title="Data Statistics" className='bottom'><DataStatistic /></Card>
         </Col>
         <Col span={13}>
           <Card title="Data List" className='bottom'><DataList /></Card>

@@ -66,15 +66,19 @@ function ICicle(props) {
                 if (d.right_child) children.push(d.right_child);
                 return children;
             })
+                .sum((d) => d.leaf_count ? d.leaf_count : 0);// 只计算叶子结点数量即可
+            //.sort((a, b) => b.height - a.height || b.internal_count - a.internal_count) // 不能按大小来排序，不然就和特征向量的位置对应不上了。也不该用internal_count，这是该节点下包含的总节点数，会重复计算。
 
-            partition(root
-                .sum((d) => d.leaf_count ? d.leaf_count : 0) // 只计算叶子结点数量即可
-                //.sort((a, b) => b.height - a.height || b.internal_count - a.internal_count) // 不能按大小来排序，不然就和特征向量的位置对应不上了。也不该用internal_count，这是该节点下包含的总节点数，会重复计算。
-            );
+            partition(root);
+            console.log("root", root)
+
+            // partition(root
+            //     .sum((d) => d.leaf_count ? d.leaf_count : 0) 
+            // );
 
             // 生成rect
             tree.selectAll("rect")
-                .data(root.descendants())
+                .data(root.descendants()) //获取所有节点
                 .join("rect")
                 .attr("transform", (d) => `translate(${d.y0},${d.x0})`)
                 .attr("width", (d) => d.y1 - d.y0)
@@ -239,7 +243,7 @@ function ICicle(props) {
             .domain(
                 [d3.min(stack(streamData), d => d3.min(d, d => d[0])),
                 d3.max(stack(streamData), d => d3.max(d, d => d[1]))])
-            .range([height / 2, 0]);
+            .range([height / 2 - 10, 0]);
 
         // Define the area generator
         const streamArea = d3.area()
