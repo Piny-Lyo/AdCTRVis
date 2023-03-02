@@ -70,7 +70,7 @@ function ICicle(props) {
             //.sort((a, b) => b.height - a.height || b.internal_count - a.internal_count) // 不能按大小来排序，不然就和特征向量的位置对应不上了。也不该用internal_count，这是该节点下包含的总节点数，会重复计算。
 
             partition(root);
-            console.log("root", root)
+            //console.log("root", root)
 
             // partition(root
             //     .sum((d) => d.leaf_count ? d.leaf_count : 0) 
@@ -127,27 +127,25 @@ function ICicle(props) {
                     tooltip
                         .style("left", xStream(i) + 10 + "px")
                         .style("top", height / 2 + "px")
-                        .html("Test")
+                        .html('Tree:' + i + '<br>' +
+                            'Ad Gains:' + streamData[i].ad.toFixed(2) + '<br>' +
+                            'User Gains:' + streamData[i].user.toFixed(2) + '<br>' +
+                            'Media Gains:' + streamData[i].media.toFixed(2)
+                        )
                         .style("display", "inline-block");
                     hoverText = event.target;
                     hoverText.setAttribute("fill", "steelblue");
                     tree.selectAll("rect")
                         .attr("fill", (d) => d.height ? color[d.data.split_feature % 3] : "lightgrey") // TODO：分裂特征类别
 
-                    streamSvg.append("line")
-                        .attr("x1", xStream(i))
-                        .attr("y1", 0)
-                        .attr("x2", xStream(i))
-                        .attr("y2", height / 2)
-                        .style("stroke", "black")
-                        .style("stroke-dasharray", "5 5");
+                    d3.select(`.line_${i}`).attr("stroke", "black");
                 })
                 .on("mouseout", () => { // mouseleave 不会冒泡；mouseout 会冒泡   
                     tooltip.style("display", "none");
                     hoverText.setAttribute("fill", "black");
                     tree.selectAll("rect")
                         .attr("fill", (d) => d.height && d.depth ? "lightblue" : "lightgrey") //根和叶子用灰色表示
-                    streamSvg.selectAll("line").remove();
+                    d3.select(`.line_${i}`).attr("stroke", "white");
                 });
 
             tree.append("text")// const cluster = 
@@ -229,7 +227,7 @@ function ICicle(props) {
             .range(color);
 
         // Define the stack layout
-        const stack = d3.stack()
+        let stack = d3.stack()
             .keys(categories)
             .offset(d3.stackOffsetWiggle)
             .order(d3.stackOrderInsideOut)
@@ -239,11 +237,13 @@ function ICicle(props) {
             .domain(d3.extent(streamData, d => d.index))
             .range([0, width]);
 
-        const yStream = d3.scaleLinear()
+        let yStream = d3.scaleLinear()
             .domain(
                 [d3.min(stack(streamData), d => d3.min(d, d => d[0])),
                 d3.max(stack(streamData), d => d3.max(d, d => d[1]))])
             .range([height / 2 - 10, 0]);
+
+        console.log('stack(streamData):', stack(streamData))
 
         // Define the area generator
         const streamArea = d3.area()
@@ -255,10 +255,42 @@ function ICicle(props) {
         // Add the streamgraph layers
         streamSvg.selectAll("path")
             .data(stack(streamData))
-            .enter()
-            .append("path")
+            .join("path")
             .attr("d", streamArea)
             .style("fill", d => colorScale(d.key));
+
+        // Add dashes
+        const lines = streamSvg.append("g");
+        lines.selectAll("line")
+            .data(streamData)
+            .join("line")
+            .attr("class", d => `line_${d.index}`)
+            .attr("x1", d => xStream(d.index))
+            .attr("y1", (d, i) => yStream(d3.min(stack(streamData), d => d[i][0])))
+            .attr("x2", d => xStream(d.index))
+            .attr("y2", (d, i) => yStream(d3.max(stack(streamData), d => d[i][1])))
+            .attr("stroke", "white")
+            .attr("stroke-dasharray", "5 5")
+            .on("mouseover", (event, d) => {
+                let coordinates = [event.offsetX, event.offsetY]
+                tooltip
+                    .style("left", coordinates[0] + "px")
+                    .style("top", coordinates[1] + 50 + "px")
+                    // tooltip
+                    //     .style("left", xStream(d.index) + 10 + "px")
+                    //     .style("top", height / 2 + 50 + "px")
+                    .html('Tree:' + d.index + '<br>' +
+                        'Ad Gains:' + d.ad.toFixed(2) + '<br>' +
+                        'User Gains:' + d.user.toFixed(2) + '<br>' +
+                        'Media Gains:' + d.media.toFixed(2)
+                    )
+                    .style("display", "inline-block");
+                event.target.setAttribute("stroke", "black");
+            })
+            .on("mouseout", (event) => { // mouseleave 不会冒泡；mouseout 会冒泡   
+                tooltip.style("display", "none");
+                event.target.setAttribute("stroke", "white");
+            });
     }, [])
 
     // 更改selectedFeature后联动更新相应rect的颜色类别
