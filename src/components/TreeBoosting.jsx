@@ -62,10 +62,70 @@ const user = ['user_id', 'age', 'city', 'city_rank', 'device_name', 'device_size
 
 const media = ['slot_id', 'app_id', 'app_tag', 'app_first_class', 'app_second_class', 'app_size', 'app_release_time', 'app_score']
 
+// Todo: sample state
+const sample0 = {
+    "user_id": 1396935,
+    "task_id": 1758,
+    "material_id": 1229,
+    "creative_type": 7,
+    "advertiser_id": 178,
+    "developer_id": 17,
+    "display_type": 5,
+    "slot_id": 11,
+    "app_id": 70,
+    "app_tag": 39,
+    "app_first_class": 4,
+    "app_second_class": 17,
+    "age": 6,
+    "city": 391,
+    "city_rank": 3,
+    "device_name": 38,
+    "device_size": 162,
+    "career": 4,
+    "gender": 2,
+    "net_type": 2,
+    "residence": 21,
+    "app_size": 2,
+    "app_release_time": 3,
+    "app_score": 2,
+    "emui_version": 20,
+    "device_release_time": 4,
+    "device_price": 4,
+    "lifecycle": 20,
+    "membership_grade": -1,
+    "membership_lifecycle": -1,
+    "purchase_tag": 2,
+    "daily_active_time": 11,
+    "industry_name": 36,
+    "display_date": 7,
+    "label": 0,
+    "prediction": 0.4330345011,
+    "key": 37100262
+}
+
 const getFeatureType = (feature) => {
     if (ad.includes(feature)) return 0; // ad
     if (user.includes(feature)) return 1; //user
     if (media.includes(feature)) return 2; // media
+}
+
+const getPath = (sample, node) => {
+    let path = [];
+    while (!node['leaf_index']) {
+        const split_feature = feature_names[node['split_feature']];
+        const value = node['internal_count'];
+        path.push(split_feature + value);
+
+        const split_value = node['threshold'];
+        if (sample[split_feature] <= split_value) {
+            node = node['left_child'];
+        }
+        else {
+            node = node['right_child'];
+        }
+    }
+    path.push('leaf' + node['leaf_count']);
+    return path;
 }
 
 function ICicle(props) {
@@ -92,6 +152,9 @@ function ICicle(props) {
 
         // ------------------Draw the ICicles---------------
         const n = treesData.length; // 聚类中心数量
+
+        const centers = treesData.map(d => d.tree_index);
+
         const treeSvg = svg.append("g");
 
         // 创建分区布局
@@ -101,6 +164,7 @@ function ICicle(props) {
         // 循环创建n个icicle
         for (let i = 0; i < n; i++) {
             let tree = treeSvg.append("g")
+                .attr("class", `tree_${i}`)
                 .attr("transform", `translate(${i / n * width},0)`);
             drawIcicle(tree, i);
         }
@@ -134,6 +198,7 @@ function ICicle(props) {
                 .attr("height", d => d.x1 - d.x0)
                 .attr("fill", d => d.height && d.depth ? "lightblue" : "lightgrey") //根和叶子用灰色表示
                 .attr("stroke", "white")
+                .attr("id", d => d.height ? feature_names[d.data.split_feature] + d.value : 'leaf' + d.value) // id: age703716  因为同一层次也会有相同的特征名
                 .attr("class", d => feature_names[d.data.split_feature]) // Bind real feature name
                 .on("mouseover", (event, d) => {
                     //console.log(event, d);
@@ -285,6 +350,7 @@ function ICicle(props) {
 
         // ---------------------Stream---------------------------
         const categories = Object.keys(streamData[0]).slice(1); //  ['ad', 'user', 'media']
+
         let streamSvg = svg.append("g")
             .attr("transform", `translate(0,${height * 3 / 8 + textHeight * 3})`);
 
@@ -324,7 +390,7 @@ function ICicle(props) {
             .data(stack(streamData))
             .join("path")
             .attr("d", streamArea)
-            .style("fill", d => colorScale(d.key));
+            .attr("fill", d => colorScale(d.key));
 
         // Add dashes
         const lines = streamSvg.append("g");
@@ -338,6 +404,8 @@ function ICicle(props) {
             .attr("y2", (d, i) => yStream(d3.max(stack(streamData), d => d[i][1])))
             .attr("stroke", "white")
             .attr("stroke-dasharray", "5 5")
+            .attr("stroke-width", d => centers.includes(d.index) ? 2 : 1)
+            .attr("opacity", d => centers.includes(d.index) ? 1 : 0.6)
             .on("mouseover", (event, d) => {
                 let coordinates = [event.offsetX, event.offsetY]
                 tooltip
@@ -357,7 +425,16 @@ function ICicle(props) {
             .on("mouseout", (event) => { // mouseleave 不会冒泡；mouseout 会冒泡   
                 tooltip.style("display", "none");
                 event.target.setAttribute("stroke", "white");
-            });
+            })
+            // 决策路径
+            .on("click", (event, d) => {
+                const tree = svg.select(`.tree_${d.index}`);
+                const path = getPath(sample0, treesData[d.index]['tree_structure']);
+                console.log(tree, path);
+                const rects = tree.selectAll(path.map(d => '#' + d));
+                console.log(rects);
+                rects.attr("fill", d => d.height ? color[getFeatureType(feature_names[d.data.split_feature])] : "lightgrey")
+            })
     }, [])
 
     // 更改selectedFeature后联动更新相应rect的颜色类别

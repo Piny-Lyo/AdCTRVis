@@ -8,7 +8,8 @@ let columns = [
     {
         title: 'Record ID',
         dataIndex: 'key',
-        align: 'center'
+        align: 'center',
+        width: 100
     }
 ]
 
