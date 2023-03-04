@@ -17,7 +17,56 @@ function TreeBoosting() {
 
 export default TreeBoosting;
 
-const color = ['#ffd666', '#ffa39e', '#87e8de'];
+const color = ['#ffd666', '#ffa39e', '#87e8de']; //ad user media
+
+const feature_names = [
+    "user_id",
+    "task_id",
+    "material_id",
+    "creative_type",
+    "advertiser_id",
+    "developer_id",
+    "display_type",
+    "slot_id",
+    "app_id",
+    "app_tag",
+    "app_first_class",
+    "app_second_class",
+    "age",
+    "city",
+    "city_rank",
+    "device_name",
+    "device_size",
+    "career",
+    "gender",
+    "net_type",
+    "residence",
+    "app_size",
+    "app_release_time",
+    "app_score",
+    "emui_version",
+    "device_release_time",
+    "device_price",
+    "lifecycle",
+    "membership_grade",
+    "membership_lifecycle",
+    "purchase_tag",
+    "daily_active_time",
+    "industry_name",
+    "display_date"
+]
+
+const ad = ['task_id', 'material_id', 'creative_type', 'advertiser_id', 'developer_id', 'display_type', 'industry_name', 'display_date']
+
+const user = ['user_id', 'age', 'city', 'city_rank', 'device_name', 'device_size', 'career', 'gender', 'net_type', 'residence', 'emui_version', 'device_release_time', 'device_price', 'lifecycle', 'membership_grade', 'membership_lifecycle', 'purchase_tag', 'daily_active_time']
+
+const media = ['slot_id', 'app_id', 'app_tag', 'app_first_class', 'app_second_class', 'app_size', 'app_release_time', 'app_score']
+
+const getFeatureType = (feature) => {
+    if (ad.includes(feature)) return 0; // ad
+    if (user.includes(feature)) return 1; //user
+    if (media.includes(feature)) return 2; // media
+}
 
 function ICicle(props) {
     const elementRef = useRef(null);
@@ -70,7 +119,7 @@ function ICicle(props) {
             //.sort((a, b) => b.height - a.height || b.internal_count - a.internal_count) // 不能按大小来排序，不然就和特征向量的位置对应不上了。也不该用internal_count，这是该节点下包含的总节点数，会重复计算。
 
             partition(root);
-            //console.log("root", root)
+            //console.log("root.descendants()", root.descendants())
 
             // partition(root
             //     .sum((d) => d.leaf_count ? d.leaf_count : 0) 
@@ -80,12 +129,12 @@ function ICicle(props) {
             tree.selectAll("rect")
                 .data(root.descendants()) //获取所有节点
                 .join("rect")
-                .attr("transform", (d) => `translate(${d.y0},${d.x0})`)
-                .attr("width", (d) => d.y1 - d.y0)
-                .attr("height", (d) => d.x1 - d.x0)
-                .attr("fill", (d) => d.height && d.depth ? "lightblue" : "lightgrey") //根和叶子用灰色表示
+                .attr("transform", d => `translate(${d.y0},${d.x0})`)
+                .attr("width", d => d.y1 - d.y0)
+                .attr("height", d => d.x1 - d.x0)
+                .attr("fill", d => d.height && d.depth ? "lightblue" : "lightgrey") //根和叶子用灰色表示
                 .attr("stroke", "white")
-                .attr("class", 'display_type') // TODO: bind real feature name
+                .attr("class", d => feature_names[d.data.split_feature]) // Bind real feature name
                 .on("mouseover", (event, d) => {
                     //console.log(event, d);
                     let coordinates = [event.offsetX, event.offsetY]
@@ -94,7 +143,7 @@ function ICicle(props) {
                         .style("top", coordinates[1] + "px")
                         .html(() => {
                             if (d.height) { //非叶子节点
-                                return 'Feature:' + d.data.split_feature + '<br>' +
+                                return 'Feature:' + feature_names[d.data.split_feature] + '<br>' +
                                     'Depth:' + d.depth + '<br>' +
                                     'Gain:' + d.data.split_gain.toFixed(2) + '<br>'
                             } else {
@@ -105,8 +154,7 @@ function ICicle(props) {
                         }
                         )
                         .style("display", "inline-block");
-                    // TODO: Replace: d.data.split_feature % 3 -> type
-                    event.target.setAttribute("fill", color[d.data.split_feature % 3]);
+                    event.target.setAttribute("fill", color[getFeatureType(feature_names[d.data.split_feature])]);
                     event.target.setAttribute("opacity", 0.8);
                 })
                 .on("mouseout", (event, d) => { // mouseleave 不会冒泡；mouseout 会冒泡   
@@ -136,7 +184,7 @@ function ICicle(props) {
                     hoverText = event.target;
                     hoverText.setAttribute("fill", "steelblue");
                     tree.selectAll("rect")
-                        .attr("fill", (d) => d.height ? color[d.data.split_feature % 3] : "lightgrey") // TODO：分裂特征类别
+                        .attr("fill", (d) => d.height ? color[getFeatureType(feature_names[d.data.split_feature])] : "lightgrey")
 
                     d3.select(`.line_${i}`).attr("stroke", "black");
                 })
@@ -148,11 +196,30 @@ function ICicle(props) {
                     d3.select(`.line_${i}`).attr("stroke", "white");
                 });
 
+            // TODO: real clusters
+            const tempTrees = [5, 10, 21, 23, 25, 28]
             tree.append("text")// const cluster = 
                 .attr("x", 22)
                 .attr("y", height / 4 + textHeight * 2)
-                //.attr("fill", "steelblue")
-                .text(`Cluster${i + 1} (nums)`); // TODO: 聚类中心的树index
+                .style("cursor", "default")
+                .text(`Cluster${i + 1} (nums)`) // TODO: 聚类中心的树index
+                .on("mouseover", (event) => {
+                    let coordinates = [event.offsetX, event.offsetY]
+                    tooltip
+                        .style("left", coordinates[0] + "px")
+                        .style("top", coordinates[1] + 50 + "px")
+                        .html(tempTrees.join(','))
+                        .style("display", "inline-block");
+                    hoverText = event.target;
+                    hoverText.setAttribute("fill", "steelblue");
+                    tempTrees.forEach(e => d3.select(`.line_${e}`).attr("stroke", "black"));
+                })
+                .on("mouseout", () => { // mouseleave 不会冒泡；mouseout 会冒泡   
+                    tooltip.style("display", "none");
+                    hoverText.setAttribute("fill", "black");
+
+                    tempTrees.forEach(e => d3.select(`.line_${e}`).attr("stroke", "white"));
+                });
 
             // const bbox = cluster.node().getBBox(); 太麻烦了，后面看情况再加
         }
@@ -201,10 +268,10 @@ function ICicle(props) {
             .attr("d", area);
 
         lineSvg.append("text")
-            .attr("x", width - 145)
+            .attr("x", width - 160)
             .attr("y", height / 8 + textHeight - 5)
             .style("text-anchor", "center")
-            .text('Tree Sequence(0 ~ n)');
+            .text('Tree Sequence(0 ~ n-1)');
 
         lineSvg.append("text")
             .attr("x", 5)
@@ -296,10 +363,8 @@ function ICicle(props) {
     // 更改selectedFeature后联动更新相应rect的颜色类别
     useEffect(() => {
         const feature = props.selectedFeature;
-        if (feature === 'display_type') {
-            const rect = d3.select(elementRef.current).selectAll('.display_type'); //TODO:${featureType}
-            rect.attr("fill", color[0]);
-        }
+        const rect = d3.select(elementRef.current).selectAll(`.${feature}`);
+        rect.attr("fill", color[getFeatureType(feature)]);
     }, [props])
 
     return (
