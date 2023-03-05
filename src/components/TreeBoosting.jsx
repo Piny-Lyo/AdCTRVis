@@ -1,15 +1,16 @@
 import * as d3 from 'd3';
 import { useEffect, useRef } from 'react';
-import { treesData, linesData, streamData } from '../data/treeModelInfo';
+import { treesData, linesData, allTrees } from '../data/treeModelInfo';
 import { Observer, useLocalObservable } from 'mobx-react';
 import { store } from '../store/store';
+import { data5000 } from '../data/dataListData5000';
 
 function TreeBoosting() {
     const myStore = useLocalObservable(() => store);
 
     return (
         <Observer>
-            {() => <ICicle selectedFeature={myStore.selectedFeature} />}
+            {() => <ICicle selectedFeature={myStore.selectedFeature} sample={myStore.sample} />}
         </Observer>
     );
 
@@ -128,11 +129,51 @@ const getPath = (sample, node) => {
     return path;
 }
 
+const getStreamGains = (sample) => {
+    let streamData = [];
+    for (let i = 0; i < allTrees.length; i++) {
+        let node = allTrees[i]['tree_structure'];
+        let ad_g = 0;
+        let user_g = 0;
+        let media_g = 0;
+
+        while (!node['leaf_index']) {
+            const split_feature = feature_names[node['split_feature']];
+            const split_value = node['threshold'];
+            const split_gain = node['split_gain'];
+
+            if (ad.includes(split_feature)) ad_g += split_gain;
+            if (user.includes(split_feature)) user_g += split_gain;
+            if (media.includes(split_feature)) media_g += split_gain;
+
+            if (sample[split_feature] <= split_value) {
+                node = node['left_child'];
+            }
+            else {
+                node = node['right_child'];
+            }
+        }
+
+        let obj = { 'index': i, 'ad': ad_g, 'user': user_g, 'media': media_g };
+        streamData.push(obj);
+    }
+    return streamData;
+}
+
 function ICicle(props) {
     const elementRef = useRef(null);
     const tooltipRef = useRef(null);
 
     useEffect(() => {
+        console.log("props.sample", props.sample)
+        // eslint-disable-next-line
+        const sample = data5000.filter(d => d.key == props.sample);
+        console.log('sample', sample)
+        let streamData = null;
+        if (sample.length !== 0) {
+            streamData = getStreamGains(sample[0]);
+        }
+
         // 获取DOM及其宽高
         const element = d3.select(elementRef.current);
         const tooltip = d3.select(tooltipRef.current);
@@ -237,6 +278,9 @@ function ICicle(props) {
                 .style("cursor", "default")
                 .on("mouseover", (event) => {
                     // let coordinates = [event.offsetX, event.offsetY]
+                    const xStream = d3.scaleLinear()
+                        .domain([0, 99])
+                        .range([0, width]);
                     tooltip
                         .style("left", xStream(i) + 10 + "px")
                         .style("top", height / 2 + "px")
@@ -349,100 +393,101 @@ function ICicle(props) {
             .text('Leaves');
 
         // ---------------------Stream---------------------------
-        const categories = Object.keys(streamData[0]).slice(1); //  ['ad', 'user', 'media']
+        if (streamData) drawStream();
+        function drawStream() {
+            const categories = ['ad', 'user', 'media']; // Object.keys(streamData[0]).slice(1)
 
-        let streamSvg = svg.append("g")
-            .attr("transform", `translate(0,${height * 3 / 8 + textHeight * 3})`);
+            let streamSvg = svg.append("g")
+                .attr("transform", `translate(0,${height * 3 / 8 + textHeight * 3})`);
 
-        // Define the color scale
-        const colorScale = d3.scaleOrdinal()
-            .domain(categories)
-            .range(color);
+            // Define the color scale
+            const colorScale = d3.scaleOrdinal()
+                .domain(categories)
+                .range(color);
 
-        // Define the stack layout
-        let stack = d3.stack()
-            .keys(categories)
-            .offset(d3.stackOffsetWiggle)
-            .order(d3.stackOrderInsideOut)
-        //.order(d3.stackOrderDescending)
+            // Define the stack layout
+            let stack = d3.stack()
+                .keys(categories)
+                .offset(d3.stackOffsetWiggle)
+                .order(d3.stackOrderInsideOut)
+            //.order(d3.stackOrderDescending)
 
-        let xStream = d3.scaleLinear()
-            .domain(d3.extent(streamData, d => d.index))
-            .range([0, width]);
+            let xStream = d3.scaleLinear()
+                .domain(d3.extent(streamData, d => d.index))
+                .range([0, width]);
 
-        let yStream = d3.scaleLinear()
-            .domain(
-                [d3.min(stack(streamData), d => d3.min(d, d => d[0])),
-                d3.max(stack(streamData), d => d3.max(d, d => d[1]))])
-            .range([height / 2 - 10, 0]);
+            let yStream = d3.scaleLinear()
+                .domain(
+                    [d3.min(stack(streamData), d => d3.min(d, d => d[0])),
+                    d3.max(stack(streamData), d => d3.max(d, d => d[1]))])
+                .range([height / 2 - 10, 0]);
 
-        console.log('stack(streamData):', stack(streamData))
+            //console.log('stack(streamData):', stack(streamData))
 
-        // Define the area generator
-        const streamArea = d3.area()
-            .curve(d3.curveBasis)
-            .x(d => xStream(d.data.index))
-            .y0(d => yStream(d[0]))
-            .y1(d => yStream(d[1]));
+            // Define the area generator
+            const streamArea = d3.area()
+                .curve(d3.curveBasis)
+                .x(d => xStream(d.data.index))
+                .y0(d => yStream(d[0]))
+                .y1(d => yStream(d[1]));
 
-        // Add the streamgraph layers
-        streamSvg.selectAll("path")
-            .data(stack(streamData))
-            .join("path")
-            .attr("d", streamArea)
-            .attr("fill", d => colorScale(d.key));
+            // Add the streamgraph layers
+            streamSvg.selectAll("path")
+                .data(stack(streamData))
+                .join("path")
+                .attr("d", streamArea)
+                .attr("fill", d => colorScale(d.key));
 
-        // Add dashes
-        const lines = streamSvg.append("g");
-        lines.selectAll("line")
-            .data(streamData)
-            .join("line")
-            .attr("class", d => `line_${d.index}`)
-            .attr("x1", d => xStream(d.index))
-            .attr("y1", (d, i) => yStream(d3.min(stack(streamData), d => d[i][0])))
-            .attr("x2", d => xStream(d.index))
-            .attr("y2", (d, i) => yStream(d3.max(stack(streamData), d => d[i][1])))
-            .attr("stroke", "white")
-            .attr("stroke-dasharray", "5 5")
-            .attr("stroke-width", d => centers.includes(d.index) ? 2 : 1)
-            .attr("opacity", d => centers.includes(d.index) ? 1 : 0.6)
-            .on("mouseover", (event, d) => {
-                let coordinates = [event.offsetX, event.offsetY]
-                tooltip
-                    .style("left", coordinates[0] + "px")
-                    .style("top", coordinates[1] + 50 + "px")
-                    // tooltip
-                    //     .style("left", xStream(d.index) + 10 + "px")
-                    //     .style("top", height / 2 + 50 + "px")
-                    .html('Tree:' + d.index + '<br>' +
-                        'Ad Gains:' + d.ad.toFixed(2) + '<br>' +
-                        'User Gains:' + d.user.toFixed(2) + '<br>' +
-                        'Media Gains:' + d.media.toFixed(2)
-                    )
-                    .style("display", "inline-block");
-                event.target.setAttribute("stroke", "black");
-            })
-            .on("mouseout", (event) => { // mouseleave 不会冒泡；mouseout 会冒泡   
-                tooltip.style("display", "none");
-                event.target.setAttribute("stroke", "white");
-            })
-            // 决策路径
-            .on("click", (event, d) => {
-                const tree = svg.select(`.tree_${d.index}`);
-                const path = getPath(sample0, treesData[d.index]['tree_structure']);
-                console.log(tree, path);
-                const rects = tree.selectAll(path.map(d => '#' + d));
-                console.log(rects);
-                rects.attr("fill", d => d.height ? color[getFeatureType(feature_names[d.data.split_feature])] : "lightgrey")
-            })
-    }, [])
+            // Add dashes
+            const lines = streamSvg.append("g");
+            lines.selectAll("line")
+                .data(streamData)
+                .join("line")
+                .attr("class", d => `line_${d.index}`)
+                .attr("x1", d => xStream(d.index))
+                .attr("y1", (d, i) => yStream(d3.min(stack(streamData), d => d[i][0])))
+                .attr("x2", d => xStream(d.index))
+                .attr("y2", (d, i) => yStream(d3.max(stack(streamData), d => d[i][1])))
+                .attr("stroke", "white")
+                .attr("stroke-dasharray", "5 5")
+                .attr("stroke-width", d => centers.includes(d.index) ? 2 : 1)
+                .attr("opacity", d => centers.includes(d.index) ? 1 : 0.6)
+                .on("mouseover", (event, d) => {
+                    let coordinates = [event.offsetX, event.offsetY]
+                    tooltip
+                        .style("left", coordinates[0] + "px")
+                        .style("top", coordinates[1] + 50 + "px")
+                        // tooltip
+                        //     .style("left", xStream(d.index) + 10 + "px")
+                        //     .style("top", height / 2 + 50 + "px")
+                        .html('Tree:' + d.index + '<br>' +
+                            'Ad Gains:' + d.ad.toFixed(2) + '<br>' +
+                            'User Gains:' + d.user.toFixed(2) + '<br>' +
+                            'Media Gains:' + d.media.toFixed(2)
+                        )
+                        .style("display", "inline-block");
+                    event.target.setAttribute("stroke", "black");
+                })
+                .on("mouseout", (event) => { // mouseleave 不会冒泡；mouseout 会冒泡   
+                    tooltip.style("display", "none");
+                    event.target.setAttribute("stroke", "white");
+                })
+                // 决策路径
+                .on("click", (event, d) => {
+                    const tree = svg.select(`.tree_${d.index}`);
+                    const path = getPath(sample0, treesData[d.index]['tree_structure']);
+                    tree.selectAll(path.map(d => '#' + d))
+                        .attr("fill", d => d.height ? color[getFeatureType(feature_names[d.data.split_feature])] : "lightgrey")
+                })
+        }
+    }, [props.sample])
 
     // 更改selectedFeature后联动更新相应rect的颜色类别
     useEffect(() => {
         const feature = props.selectedFeature;
         const rect = d3.select(elementRef.current).selectAll(`.${feature}`);
         rect.attr("fill", color[getFeatureType(feature)]);
-    }, [props])
+    }, [props.selectedFeature])
 
     return (
         <>

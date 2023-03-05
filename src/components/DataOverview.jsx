@@ -22,7 +22,7 @@ function DataOverview() {
         const margin = ({ top: 30, left: 30, right: 0, bottom: 0 })
         const color = d3.interpolateBrBG;
 
-        console.log("RGB Test:", color(0), color(1));
+        //console.log("RGB Test:", color(0), color(1));
 
         // 清除已有svg
         if (element.selectAll('svg')) {
@@ -41,10 +41,10 @@ function DataOverview() {
         // const myColor = ['#2ca25f', '#99d8c9', '#8856a7', '#9ebcda', '#f7f7f7'];
         const myColor = [color(0.8), color(0.6), color(0.4), color(0.2)]
         const testMatixData = [
-            { color: myColor[0], label: "TP", value: 4 * all / 8 },
-            { color: myColor[1], label: "FP", value: 2 * all / 8 },
-            { color: myColor[2], label: "FN", value: 1 * all / 8 },
-            { color: myColor[3], label: "TN", value: 1 * all / 8 },
+            { color: myColor[0], label: "TP", value: 1819 },
+            { color: myColor[1], label: "FP", value: 1051 },
+            { color: myColor[2], label: "FN", value: 688 },
+            { color: myColor[3], label: "TN", value: 1442 },
         ];
 
         const matrix = svg.append("g")
@@ -62,13 +62,26 @@ function DataOverview() {
         matrix.append("rect")
             .attr("width", margin.left)
             .attr("height", (d, i) => (height - 20) * (d.value / all))
-            .style("fill", function (d) { return d.color; });
+            .attr("fill", d => d.color)
+            .on("mouseover", (event, d) => {
+                let coordinates = [event.offsetX, event.offsetY]
+                tooltip
+                    .style("left", coordinates[0] + "px")
+                    .style("top", coordinates[1] + "px")
+                    .html(d.label + ': ' + d.value)
+                    .style("display", "inline-block");
+                event.target.setAttribute("opacity", 0.8);
+            })
+            .on("mouseout", (event, d) => { // mouseleave 不会冒泡；mouseout 会冒泡   
+                tooltip.style("display", "none");
+                event.target.setAttribute("opacity", 1);
+            })
 
         matrix.append("text")
             .attr("x", 6)
             .attr("y", (d, i) => (height - 20) * (d.value / all) / 2)
-            .style("text-anchor", "start")
-            .text((d) => d.label);
+            .attr("text-anchor", "start")
+            .text(d => d.label);
 
 
         // Draw the score legend

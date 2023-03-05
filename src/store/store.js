@@ -2,7 +2,8 @@ import { makeAutoObservable } from 'mobx'
 
 class Store {
     selectedFeature = null;
-    keys = null;
+    keys = null; // bins里的样本index
+    sample = null; // Data List里选中的样本
 
     constructor() {
         makeAutoObservable(this);
@@ -14,6 +15,10 @@ class Store {
 
     setKeys = (keys) => {
         this.keys = keys;
+    }
+
+    setSample = (sample) => {
+        this.sample = sample;
     }
 }
 

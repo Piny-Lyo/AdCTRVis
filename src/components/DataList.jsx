@@ -8,10 +8,9 @@ import { store } from '../store/store';
 
 function DataList() {
     const myStore = useLocalObservable(() => store);
-
     return (
         <Observer>{() =>
-            <MyTable keys={myStore.keys}></MyTable>
+            <MyTable keys={myStore.keys} store={myStore}></MyTable>
         }
         </Observer>
     )
@@ -19,7 +18,9 @@ function DataList() {
 export default DataList;
 
 function MyTable(props) {
+    const myStore = props.store;
     const keys = props.keys;
+
     let data = [];
     if (keys) {
         data5000.forEach(d => {
@@ -32,6 +33,16 @@ function MyTable(props) {
             scroll={{
                 x: 2500,
                 y: 220,
-            }} />
+            }}
+            onRow={() => {
+                return {
+                    onClick: (event) => { // 点击行
+                        const sample = event.target.innerText;
+                        myStore.setSample(sample);
+                        console.log('sample:', myStore.sample);
+                    }
+                };
+            }}
+        />
     );
 }
