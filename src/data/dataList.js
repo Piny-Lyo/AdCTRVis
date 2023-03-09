@@ -9,8 +9,21 @@ let columns = [
         title: 'Record ID',
         dataIndex: 'key',
         align: 'center',
-        width: 100
-    }
+        width: 100,
+    },
+    {
+        title: 'Probability',
+        dataIndex: 'probability',
+        align: 'center',
+        width: 110,
+        className: 'probability'
+    },
+    {
+        title: 'Label',
+        dataIndex: 'label',
+        align: 'center',
+    },
+
 ]
 
 let adTable = [], adSelect = [];

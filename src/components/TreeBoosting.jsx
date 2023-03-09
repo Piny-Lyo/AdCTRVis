@@ -63,47 +63,6 @@ const user = ['user_id', 'age', 'city', 'city_rank', 'device_name', 'device_size
 
 const media = ['slot_id', 'app_id', 'app_tag', 'app_first_class', 'app_second_class', 'app_size', 'app_release_time', 'app_score']
 
-// Todo: sample state
-const sample0 = {
-    "user_id": 1396935,
-    "task_id": 1758,
-    "material_id": 1229,
-    "creative_type": 7,
-    "advertiser_id": 178,
-    "developer_id": 17,
-    "display_type": 5,
-    "slot_id": 11,
-    "app_id": 70,
-    "app_tag": 39,
-    "app_first_class": 4,
-    "app_second_class": 17,
-    "age": 6,
-    "city": 391,
-    "city_rank": 3,
-    "device_name": 38,
-    "device_size": 162,
-    "career": 4,
-    "gender": 2,
-    "net_type": 2,
-    "residence": 21,
-    "app_size": 2,
-    "app_release_time": 3,
-    "app_score": 2,
-    "emui_version": 20,
-    "device_release_time": 4,
-    "device_price": 4,
-    "lifecycle": 20,
-    "membership_grade": -1,
-    "membership_lifecycle": -1,
-    "purchase_tag": 2,
-    "daily_active_time": 11,
-    "industry_name": 36,
-    "display_date": 7,
-    "label": 0,
-    "prediction": 0.4330345011,
-    "key": 37100262
-}
-
 const getFeatureType = (feature) => {
     if (ad.includes(feature)) return 0; // ad
     if (user.includes(feature)) return 1; //user
@@ -137,7 +96,7 @@ const getStreamGains = (sample) => {
         let user_g = 0;
         let media_g = 0;
 
-        while (!node['leaf_index']) {
+        while (node['leaf_index'] == undefined) {
             const split_feature = feature_names[node['split_feature']];
             const split_value = node['threshold'];
             const split_gain = node['split_gain'];
@@ -160,15 +119,31 @@ const getStreamGains = (sample) => {
     return streamData;
 }
 
+const getTreeSize = (trees) => {
+    let treeSize = [];
+    for (let i = 0; i < trees.length; i++) {
+        let str = JSON.stringify(trees[i]);
+        let reg = new RegExp("split_index", "g");
+        let non_leaf = str.match(reg).length;
+        let leaf = trees[i]["num_leaves"];
+        let size = non_leaf + leaf;
+        let obj = {
+            x: i,
+            y: size
+        }
+        treeSize.push(obj);
+    }
+    console.log("treesize", treeSize);
+    return treeSize;
+}
+
 function ICicle(props) {
     const elementRef = useRef(null);
     const tooltipRef = useRef(null);
 
     useEffect(() => {
-        console.log("props.sample", props.sample)
         // eslint-disable-next-line
         const sample = data5000.filter(d => d.key == props.sample);
-        console.log('sample', sample)
         let streamData = null;
         if (sample.length !== 0) {
             streamData = getStreamGains(sample[0]);
@@ -192,9 +167,18 @@ function ICicle(props) {
         const textHeight = 20;
 
         // ------------------Draw the ICicles---------------
-        const n = treesData.length; // 聚类中心数量
+        const centers = [39, 90, 1, 25, 32, 6];
+        const clusters = [[3, 4, 12, 15, 16, 22, 31, 39, 41, 45, 47, 48, 49, 50, 61, 64, 69, 70, 76, 78, 79, 83, 86, 88, 95, 98], [72, 82, 85, 89, 90, 93, 97, 99], [1, 11, 26, 28, 29, 37, 46, 53, 58, 62, 63, 66, 77, 94], [7, 13, 20, 25, 38, 60, 65, 68], [2, 8, 17, 19, 21, 24, 30, 32, 34, 35, 40, 43, 51, 52, 54, 55, 57, 71, 81, 84, 92], [0, 5, 6, 9, 10, 14, 18, 23, 27, 33, 36, 42, 44, 56, 59, 67, 73, 74, 75, 80, 87, 91, 96]];
+        const n = centers.length; // 聚类中心数量
+        let map = new Map();
+        for (let i = 0; i < centers.length; i++) {
+            map.set(centers[i], clusters[i]);
+        }
 
-        const centers = treesData.map(d => d.tree_index);
+        const sorted_centers = centers.sort((a, b) => a - b);
+        console.log(sorted_centers, map);
+
+        //const centers = treesData.map(d => d.tree_index);
 
         const treeSvg = svg.append("g");
 
@@ -207,11 +191,11 @@ function ICicle(props) {
             let tree = treeSvg.append("g")
                 .attr("class", `tree_${i}`)
                 .attr("transform", `translate(${i / n * width},0)`);
-            drawIcicle(tree, i);
+            drawIcicle(tree, sorted_centers[i], i);
         }
 
-        function drawIcicle(tree, i) {
-            let data = treesData[i].tree_structure
+        function drawIcicle(tree, i, index) {
+            let data = allTrees[i].tree_structure
 
             // 绑定数据，并生成层次数据
             let root = d3.hierarchy(data, d => {
@@ -306,57 +290,58 @@ function ICicle(props) {
                 });
 
             // TODO: real clusters
-            const tempTrees = [5, 10, 21, 23, 25, 28]
+            const trees_index = map.get(i);
             tree.append("text")// const cluster = 
-                .attr("x", 22)
+                .attr("x", 25)
                 .attr("y", height / 4 + textHeight * 2)
                 .style("cursor", "default")
-                .text(`Cluster${i + 1} (nums)`) // TODO: 聚类中心的树index
+                .text(`Cluster${index + 1} (nums)`) // TODO: 聚类中心的树index
                 .on("mouseover", (event) => {
                     let coordinates = [event.offsetX, event.offsetY]
                     tooltip
                         .style("left", coordinates[0] + "px")
                         .style("top", coordinates[1] + 50 + "px")
-                        .html(tempTrees.join(','))
+                        .html(trees_index.join(','))
                         .style("display", "inline-block");
                     hoverText = event.target;
                     hoverText.setAttribute("fill", "steelblue");
-                    tempTrees.forEach(e => d3.select(`.line_${e}`).attr("stroke", "black"));
+                    trees_index.forEach(e => d3.select(`.line_${e}`).attr("stroke", "black"));
                 })
                 .on("mouseout", () => { // mouseleave 不会冒泡；mouseout 会冒泡   
                     tooltip.style("display", "none");
-                    hoverText.setAttribute("fill", "black");
-
-                    tempTrees.forEach(e => d3.select(`.line_${e}`).attr("stroke", "white"));
+                    hoverText.setAttribute("fill", "black")
+                    trees_index.forEach(e => d3.select(`.line_${e}`).attr("stroke", "white"));
                 });
 
             // const bbox = cluster.node().getBBox(); 太麻烦了，后面看情况再加
         }
 
-        // ------------------Draw the Lines---------------
+        // // ------------------Draw the Lines---------------
         const lineSvg = svg.append("g")
             .attr("transform", `translate(0,${height / 4 + textHeight * 2})`);
 
+        const treeSize = getTreeSize(allTrees);
+
         const xScale = d3.scaleLinear()
-            .domain([0, d3.max(linesData[1], d => d.x)])
+            .domain([0, d3.max(treeSize, d => d.x)])
             .range([0, width]);
 
         const yScale = d3.scaleLinear()
-            .domain([0, d3.max(linesData[1], d => d.y)])
-            .range([height / 8, 0]);
+            .domain([0, d3.max(treeSize, d => d.y)])
+            .range([height / 8, textHeight]);
 
-        // 那颗线，不要也行
-        // const line = d3.line()
-        //     .x(d => xScale(d.x))
-        //     .y(d => yScale(d.y))
-        //     .curve(d3.curveBasis);
+        // // 那颗线，不要也行
+        // // const line = d3.line()
+        // //     .x(d => xScale(d.x))
+        // //     .y(d => yScale(d.y))
+        // //     .curve(d3.curveBasis);
 
-        // lineSvg.append("path")
-        //     .datum(linesData)
-        //     .attr("fill", "none")
-        //     .attr("stroke", "steelblue")
-        //     .attr("stroke-width", 1.5)
-        //     .attr("d", line);
+        // // lineSvg.append("path")
+        // //     .datum(linesData)
+        // //     .attr("fill", "none")
+        // //     .attr("stroke", "steelblue")
+        // //     .attr("stroke-width", 1.5)
+        // //     .attr("d", line);
 
         const area = d3.area()
             .x(d => xScale(d.x))
@@ -365,16 +350,22 @@ function ICicle(props) {
             .curve(d3.curveBasis);
 
         lineSvg.append("path")
-            .datum(linesData[1]) // leaves
+            .datum(treeSize) // allSize
             .attr("fill", "lightgrey")
             .attr("fill-opacity", 0.5)
             .attr("d", area);
 
-        lineSvg.append("path")
-            .datum(linesData[0]) //depth
-            .attr("fill", "lightblue")
-            .attr("fill-opacity", 0.5)
-            .attr("d", area);
+        // lineSvg.append("path")
+        //     .datum(linesData[1]) // leaves
+        //     .attr("fill", "pink")
+        //     .attr("fill-opacity", 0.5)
+        //     .attr("d", area);
+
+        // lineSvg.append("path")
+        //     .datum(linesData[0]) //depth
+        //     .attr("fill", "lightblue")
+        //     .attr("fill-opacity", 0.5)
+        //     .attr("d", area);
 
         lineSvg.append("text")
             .attr("x", width - 160)
@@ -382,15 +373,15 @@ function ICicle(props) {
             .style("text-anchor", "center")
             .text('Tree Sequence(0 ~ n-1)');
 
-        lineSvg.append("text")
-            .attr("x", 5)
-            .attr("y", yScale(linesData[0][0].y)) //height / 8 - 20
-            .text('Depth');
+        // lineSvg.append("text")
+        //     .attr("x", 5)
+        //     .attr("y", yScale(linesData[0][0].y)) //height / 8 - 20
+        //     .text('Depth');
 
-        lineSvg.append("text")
-            .attr("x", 5)
-            .attr("y", yScale(linesData[1][0].y)) //height / 8 - 5
-            .text('Leaves');
+        // lineSvg.append("text")
+        //     .attr("x", 5)
+        //     .attr("y", yScale(linesData[1][0].y)) //height / 8 - 5
+        //     .text('Leaves');
 
         // ---------------------Stream---------------------------
         if (streamData) drawStream();
@@ -398,7 +389,7 @@ function ICicle(props) {
             const categories = ['ad', 'user', 'media']; // Object.keys(streamData[0]).slice(1)
 
             let streamSvg = svg.append("g")
-                .attr("transform", `translate(0,${height * 3 / 8 + textHeight * 3})`);
+                .attr("transform", `translate(0,${height * 3 / 8 + textHeight * 3})`); // 3 / 8
 
             // Define the color scale
             const colorScale = d3.scaleOrdinal()
@@ -475,7 +466,7 @@ function ICicle(props) {
                 // 决策路径
                 .on("click", (event, d) => {
                     const tree = svg.select(`.tree_${d.index}`);
-                    const path = getPath(sample0, treesData[d.index]['tree_structure']);
+                    const path = getPath(sample[0], treesData[d.index]['tree_structure']);
                     tree.selectAll(path.map(d => '#' + d))
                         .attr("fill", d => d.height ? color[getFeatureType(feature_names[d.data.split_feature])] : "lightgrey")
                 })

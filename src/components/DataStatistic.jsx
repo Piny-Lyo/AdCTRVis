@@ -20,6 +20,8 @@ function DataStatistic() {
 
 export default DataStatistic;
 
+const myColor = ['#ffd666', '#ffa39e', '#87e8de'] //gold-4 red-3 cyan-3
+
 function Statistic(props) {
     const elementRef = useRef(null);
     const tooltipRef = useRef(null);
@@ -145,12 +147,12 @@ function Statistic(props) {
             violin.append("path")
                 .datum(density)
                 .attr("d", area)
-                .attr("fill", "lightblue");
+                .attr("fill", myColor[1]);
 
             violin.append("path")
                 .datum(density)
                 .attr("d", area_sym)
-                .attr("fill", "lightblue");
+                .attr("fill", myColor[1]);
 
             // 定义核函数
             function kernelDensityEstimator(kernel, x) {
@@ -271,7 +273,7 @@ function Statistic(props) {
             .data(roseData)
             .join('path')
             .attr('d', arcs)
-            .attr('fill', 'lightblue')
+            .attr('fill', myColor[1])
             .on("mouseover", (event, d) => {
                 let coordinates = [event.offsetX, event.offsetY]
                 tooltip

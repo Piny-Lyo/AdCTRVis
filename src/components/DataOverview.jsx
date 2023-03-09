@@ -129,7 +129,7 @@ function DataOverview() {
 
         // Draw hexbin scatter
         const scatter = svg.append("g")
-            .attr("transform", `translate(${margin.left - 10},${margin.top - 10})`);
+            .attr("transform", `translate(${margin.left - 20},${margin.top - 20})`);
 
         const x = d3.scaleLinear()
             .domain(d3.extent(data, d => d.x)).nice()
