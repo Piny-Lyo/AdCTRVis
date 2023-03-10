@@ -20,16 +20,30 @@ function DataStatistic() {
 
 export default DataStatistic;
 
-const myColor = ['#ffd666', '#ffa39e', '#87e8de'] //gold-4 red-3 cyan-3
+const myColor = ['#ffa39e', '#ffd666', '#87e8de'] //red-3 gold-4 cyan-3
 
 function Statistic(props) {
     const elementRef = useRef(null);
     const tooltipRef = useRef(null);
 
-    const [value, setValue] = useState(2); //type
+    const [cat_index, setCat] = useState(['user_id', 'city', 'purchase_tag', 'device_name', 'career', 'gender', 'residence', 'net_type']);
+    const [num_index, setNum] = useState(['age', 'city_rank', 'device_size', 'emui_version', 'device_release_time', 'device_price', 'lifecycle', 'membership_grade', 'membership_lifecycle', 'daily_active_time']);
+
+    const [value, setValue] = useState(1); //type
     const onChange = (e) => {
         console.log('radio checked', e);
-        setValue(e.target.value);
+        const type = e.target.value; // 0, 1, 2
+        setValue(type);
+        if (type === 0) { // ad
+            setCat(['task_id', 'material_id', 'creative_type', 'advertiser_id', 'developer_id', 'display_type', 'industry_name']);
+            setNum(['display_date'])
+        } else if (type === 1) { //user
+            setCat(['user_id', 'city', 'purchase_tag', 'device_name', 'career', 'gender', 'residence', 'net_type']);
+            setNum(['age', 'city_rank', 'device_size', 'emui_version', 'device_release_time', 'device_price', 'lifecycle', 'membership_grade', 'membership_lifecycle', 'daily_active_time']);
+        } else { //media
+            setCat(['slot_id', 'app_id', 'app_tag', 'app_first_class', 'app_second_class']);
+            setNum(['app_size', 'app_release_time', 'app_score']);
+        }
     };
 
     // 导入数据
@@ -65,13 +79,10 @@ function Statistic(props) {
 
         // --------------小提琴图-----------------
 
-        const cat_index_user = ['user_id', 'city', 'purchase_tag', 'device_name', 'device_size', 'career', 'gender', 'residence', 'net_type'];
-        const num_index_user = ['age', 'city_rank', 'emui_version', 'device_release_time', 'device_price', 'lifecycle', 'membership_grade', 'membership_lifecycle', 'daily_active_time']
-
         // 循环画多个小提琴图
         const violins = svg.append("g");
-        for (let i = 0; i < num_index_user.length; i++) {
-            let violin = violins.append("g").attr("class", num_index_user[i]);
+        for (let i = 0; i < num_index.length; i++) {
+            let violin = violins.append("g").attr("class", num_index[i]);
             drawViolin(i, violin);
         }
 
@@ -79,7 +90,7 @@ function Statistic(props) {
             const center = [width / 4, (height - margin.bottom - margin.top) / 2 - margin.bottom];
 
             // 提取数值列
-            let values = data.map(d => d[num_index_user[i]]);
+            let values = data.map(d => d[num_index[i]]);
 
             // 计算五个统计指标
             const [min, max] = d3.extent(values);
@@ -99,7 +110,7 @@ function Statistic(props) {
 
             // ----------画小提琴背景----------
 
-            const violinWidth = (height - margin.top - margin.bottom) / (num_index_user.length * 2); // 一般的宽度  /18
+            const violinWidth = (height - margin.top - margin.bottom) / (num_index.length * 2); // 一般的宽度  /18
 
             // 定义x轴比例尺
             const x = d3.scaleLinear()
@@ -147,12 +158,14 @@ function Statistic(props) {
             violin.append("path")
                 .datum(density)
                 .attr("d", area)
-                .attr("fill", myColor[1]);
+                .attr("fill", myColor[value])
+                .attr("opacity", 0.9);
 
             violin.append("path")
                 .datum(density)
                 .attr("d", area_sym)
-                .attr("fill", myColor[1]);
+                .attr("fill", myColor[value])
+                .attr("opacity", 0.9);
 
             // 定义核函数
             function kernelDensityEstimator(kernel, x) {
@@ -211,7 +224,7 @@ function Statistic(props) {
                 .attr("fill", "grey");
 
             // 旋转
-            violin.attr("transform", `rotate(${i * 40} ${center[0]} ${center[1]})`);
+            violin.attr("transform", `rotate(${i * 360 / num_index.length} ${center[0]} ${center[1]})`);
 
             // tooltip
             violin.on("mouseover", (event) => {
@@ -220,7 +233,7 @@ function Statistic(props) {
                     .style("left", coordinates[0] + "px")
                     .style("top", coordinates[1] - 50 + "px")
                     //.html(num_index_user[i])
-                    .html(num_index_user[i] + '<br>' +
+                    .html(num_index[i] + '<br>' +
                         'Min: ' + newMin + ' Max:' + newMax + '<br>' +
                         'Q1(25%):' + q1 + '<br>' +
                         'Q2(50%):' + q2 + '<br>' +
@@ -241,13 +254,13 @@ function Statistic(props) {
 
         // 计算cat数据的频率最高值、频率
         let roseData = [];
-        for (let i = 0; i < cat_index_user.length; i++) {
-            let cat_values = data.map(d => d[cat_index_user[i]]);
+        for (let i = 0; i < cat_index.length; i++) {
+            let cat_values = data.map(d => d[cat_index[i]]);
             let groupCount = d3.rollups(cat_values, v => v.length, d => d); //计算每个值及其出现频率 [value, freq]
             let maxFeqIndex = d3.maxIndex(groupCount, d => d[1]); // 找到频率最高的元素对应索引 
             let maxValueFreq = groupCount[maxFeqIndex]; // freq最大的 [value, freq]
             let obj = {
-                name: cat_index_user[i],
+                name: cat_index[i],
                 maxValue: maxValueFreq[0],
                 maxFreq: maxValueFreq[1]
             }
@@ -256,7 +269,7 @@ function Statistic(props) {
 
         // 绘制扇形
         const n = data.length;
-        const angle = Math.PI * 2 / cat_index_user.length;
+        const angle = Math.PI * 2 / cat_index.length;
         const r = width / 4 - margin.right;
 
         const arcs = d3.arc()
@@ -273,7 +286,8 @@ function Statistic(props) {
             .data(roseData)
             .join('path')
             .attr('d', arcs)
-            .attr('fill', myColor[1])
+            .attr('fill', myColor[value])
+            .attr("opacity", 0.9)
             .on("mouseover", (event, d) => {
                 let coordinates = [event.offsetX, event.offsetY]
                 tooltip
@@ -307,15 +321,15 @@ function Statistic(props) {
             .style("text-anchor", "center")
             .style("font-size", "medium")
             .text('Categorical');
-    }, [data])
+    }, [data, value, num_index, cat_index])
 
     return (
         <>
             <div style={{ textAlign: 'center', marginTop: '10px' }}>
                 <Radio.Group onChange={onChange} value={value} size='large'>
-                    <Radio value={1}>Ad</Radio>
-                    <Radio value={2}>User</Radio>
-                    <Radio value={3}>Media</Radio>
+                    <Radio value={0}>Ad</Radio>
+                    <Radio value={1}>User</Radio>
+                    <Radio value={2}>Media</Radio>
                 </Radio.Group>
             </div>
 

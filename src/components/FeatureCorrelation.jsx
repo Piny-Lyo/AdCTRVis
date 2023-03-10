@@ -43,7 +43,7 @@ function Net(props) {
 
         const [nodes, links] = [data.nodes, data.links];
         // const color = d3.scaleOrdinal(d3.schemeCategory10);
-        const myColor = ['#ffd666', '#ffa39e', '#87e8de'] //gold-4 red-3 cyan-3
+        const myColor = ['#ffa39e', '#ffd666', '#87e8de'] //red-3 gold-4 cyan-3
 
         // Create a new simulation to layout a graph
         const simulation = d3.forceSimulation()

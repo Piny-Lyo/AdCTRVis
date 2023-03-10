@@ -18,7 +18,7 @@ function TreeBoosting() {
 
 export default TreeBoosting;
 
-const color = ['#ffd666', '#ffa39e', '#87e8de']; //ad user media
+const color = ['#ffa39e', '#ffd666', '#87e8de'] //red-3 gold-4 cyan-3; //ad user media
 
 const feature_names = [
     "user_id",
@@ -222,6 +222,7 @@ function ICicle(props) {
                 .attr("width", d => d.y1 - d.y0)
                 .attr("height", d => d.x1 - d.x0)
                 .attr("fill", d => d.height && d.depth ? "lightblue" : "lightgrey") //根和叶子用灰色表示
+                .attr("opacity", 0.75)
                 .attr("stroke", "white")
                 .attr("id", d => d.height ? feature_names[d.data.split_feature] + d.value : 'leaf' + d.value) // id: age703716  因为同一层次也会有相同的特征名
                 .attr("class", d => feature_names[d.data.split_feature]) // Bind real feature name
@@ -245,12 +246,12 @@ function ICicle(props) {
                         )
                         .style("display", "inline-block");
                     event.target.setAttribute("fill", color[getFeatureType(feature_names[d.data.split_feature])]);
-                    event.target.setAttribute("opacity", 0.8);
+                    event.target.setAttribute("opacity", 1);
                 })
                 .on("mouseout", (event, d) => { // mouseleave 不会冒泡；mouseout 会冒泡   
                     tooltip.style("display", "none");
                     event.target.setAttribute("fill", d.height && d.depth ? "lightblue" : "lightgrey");
-                    event.target.setAttribute("opacity", 1);
+                    event.target.setAttribute("opacity", 0.75);
                 });
 
             // Label
@@ -278,18 +279,18 @@ function ICicle(props) {
                     hoverText.setAttribute("fill", "steelblue");
                     tree.selectAll("rect")
                         .attr("fill", (d) => d.height ? color[getFeatureType(feature_names[d.data.split_feature])] : "lightgrey")
-
-                    d3.select(`.line_${i}`).attr("stroke", "black");
+                        .attr("opacity", 1)
+                    d3.select(`.line_${i}`).attr("stroke", "#434343");
                 })
                 .on("mouseout", () => { // mouseleave 不会冒泡；mouseout 会冒泡   
                     tooltip.style("display", "none");
                     hoverText.setAttribute("fill", "black");
                     tree.selectAll("rect")
                         .attr("fill", (d) => d.height && d.depth ? "lightblue" : "lightgrey") //根和叶子用灰色表示
+                        .attr("opacity", 0.75)
                     d3.select(`.line_${i}`).attr("stroke", "white");
                 });
 
-            // TODO: real clusters
             const trees_index = map.get(i);
             tree.append("text")// const cluster = 
                 .attr("x", 25)
@@ -305,7 +306,7 @@ function ICicle(props) {
                         .style("display", "inline-block");
                     hoverText = event.target;
                     hoverText.setAttribute("fill", "steelblue");
-                    trees_index.forEach(e => d3.select(`.line_${e}`).attr("stroke", "black"));
+                    trees_index.forEach(e => d3.select(`.line_${e}`).attr("stroke", "#434343"));
                 })
                 .on("mouseout", () => { // mouseleave 不会冒泡；mouseout 会冒泡   
                     tooltip.style("display", "none");
@@ -442,7 +443,7 @@ function ICicle(props) {
                 .attr("stroke", "white")
                 .attr("stroke-dasharray", "5 5")
                 .attr("stroke-width", d => centers.includes(d.index) ? 2 : 1)
-                .attr("opacity", d => centers.includes(d.index) ? 1 : 0.6)
+                .attr("opacity", d => centers.includes(d.index) ? 1 : 0.5)
                 .on("mouseover", (event, d) => {
                     let coordinates = [event.offsetX, event.offsetY]
                     tooltip
@@ -457,7 +458,7 @@ function ICicle(props) {
                             'Media Gains:' + d.media.toFixed(2)
                         )
                         .style("display", "inline-block");
-                    event.target.setAttribute("stroke", "black");
+                    event.target.setAttribute("stroke", "#434343");
                 })
                 .on("mouseout", (event) => { // mouseleave 不会冒泡；mouseout 会冒泡   
                     tooltip.style("display", "none");
@@ -477,7 +478,8 @@ function ICicle(props) {
     useEffect(() => {
         const feature = props.selectedFeature;
         const rect = d3.select(elementRef.current).selectAll(`.${feature}`);
-        rect.attr("fill", color[getFeatureType(feature)]);
+        rect.attr("fill", color[getFeatureType(feature)])
+            .attr("opacity", 1);
     }, [props.selectedFeature])
 
     return (

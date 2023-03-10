@@ -1,11 +1,14 @@
 .ad_col {
-    background: #ffd767;
+    background: #ffa39e;
+    opacity: 0.9;
 }
 
 .user_col {
-    background: #ffa39e;
+    background: #ffd666;
+    opacity: 0.9;
 }
 
 .media_col {
     background: #87e8de;
+    opacity: 0.9;
 }

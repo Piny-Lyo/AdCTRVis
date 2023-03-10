@@ -20,12 +20,12 @@ function ControlPanel() {
     const treeData = [
         {
             value: 'Ad',
-            title: (<b style={{ color: '#ffd666' }}>Ad</b>),
+            title: (<b style={{ color: '#ffa39e' }}>Ad</b>),
             children: selectData[0]
         },
         {
             value: 'User',
-            title: (<b style={{ color: '#ffa39e' }}>User</b>),
+            title: (<b style={{ color: '#ffd666' }}>User</b>),
             children: selectData[1]
         },
         {
