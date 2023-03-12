@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { useEffect, useRef } from 'react';
-import { treesData, linesData, allTrees } from '../data/treeModelInfo';
+import { allTrees } from '../data/treeModelInfo';
 import { Observer, useLocalObservable } from 'mobx-react';
 import { store } from '../store/store';
 import { data5000 } from '../data/dataListData5000';
@@ -96,7 +96,7 @@ const getStreamGains = (sample) => {
         let user_g = 0;
         let media_g = 0;
 
-        while (node['leaf_index'] == undefined) {
+        while (node['leaf_index'] === undefined) {
             const split_feature = feature_names[node['split_feature']];
             const split_value = node['threshold'];
             const split_gain = node['split_gain'];
@@ -178,8 +178,6 @@ function ICicle(props) {
         const sorted_centers = centers.sort((a, b) => a - b);
         console.log(sorted_centers, map);
 
-        //const centers = treesData.map(d => d.tree_index);
-
         const treeSvg = svg.append("g");
 
         // 创建分区布局
@@ -189,7 +187,7 @@ function ICicle(props) {
         // 循环创建n个icicle
         for (let i = 0; i < n; i++) {
             let tree = treeSvg.append("g")
-                .attr("class", `tree_${i}`)
+                .attr("class", `tree_${sorted_centers[i]}`)
                 .attr("transform", `translate(${i / n * width},0)`);
             drawIcicle(tree, sorted_centers[i], i);
         }
@@ -466,9 +464,12 @@ function ICicle(props) {
                 })
                 // 决策路径
                 .on("click", (event, d) => {
+                    console.log('click', d)
                     const tree = svg.select(`.tree_${d.index}`);
-                    const path = getPath(sample[0], treesData[d.index]['tree_structure']);
+                    console.log('tree', tree)
+                    const path = getPath(sample[0], allTrees[d.index]['tree_structure']);
                     tree.selectAll(path.map(d => '#' + d))
+                        .attr("opacity", 1)
                         .attr("fill", d => d.height ? color[getFeatureType(feature_names[d.data.split_feature])] : "lightgrey")
                 })
         }
