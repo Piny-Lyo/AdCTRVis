@@ -1,8 +1,6 @@
 import * as d3 from 'd3';
 import { Radio } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-//import { cat_index_user, num_index_user, cat, num } from '../data/dataStatistic';
-//import { dataListData } from '../data/dataListData';
 import { data5000 } from '../data/dataListData5000';
 import { Observer, useLocalObservable } from 'mobx-react';
 import { store } from '../store/store';

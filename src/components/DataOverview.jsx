@@ -2,7 +2,6 @@ import * as d3 from 'd3';
 import * as d3_hexbin from 'd3-hexbin'
 import { useEffect, useRef } from 'react';
 import { overviewData } from '../data/dataOverview';
-//import { bins } from '../data/dataOverviewBins';
 import { useLocalObservable } from 'mobx-react'; //trigger，不用Observer都行
 import { store } from '../store/store';
 
@@ -34,17 +33,14 @@ function DataOverview() {
             .attr("width", width)
             .attr("height", height);
 
-        // Draw the confusion matrix    
+        // Draw the confusion matrix
         const all = data.length;
-        //const all = 1000000;
-
-        // const myColor = ['#2ca25f', '#99d8c9', '#8856a7', '#9ebcda', '#f7f7f7'];
         const myColor = [color(0.8), color(0.6), color(0.4), color(0.2)]
         const testMatixData = [
-            { color: myColor[0], label: "TP", value: 1819 },
-            { color: myColor[1], label: "FP", value: 1051 },
-            { color: myColor[2], label: "FN", value: 688 },
-            { color: myColor[3], label: "TN", value: 1442 },
+            { color: myColor[0], label: "TP", value: 1874 },
+            { color: myColor[1], label: "FP", value: 727 },
+            { color: myColor[2], label: "FN", value: 422 },
+            { color: myColor[3], label: "TN", value: 1977 },
         ];
 
         const matrix = svg.append("g")
@@ -129,7 +125,7 @@ function DataOverview() {
 
         // Draw hexbin scatter
         const scatter = svg.append("g")
-            .attr("transform", `translate(${margin.left - 20},${margin.top - 20})`);
+            .attr("transform", `translate(${margin.left - 20},${margin.top - 30})`);
 
         const x = d3.scaleLinear()
             .domain(d3.extent(data, d => d.x)).nice()
