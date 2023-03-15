@@ -19,6 +19,7 @@ function TreeBoosting() {
 export default TreeBoosting;
 
 const centers = [60, 79, 82, 43, 49, 74]
+//const centers = [1, 10, 82, 43, 49, 74]
 const clusters = [[7, 10, 12, 21, 23, 24, 32, 42, 44, 46, 60, 65, 68, 70, 80, 89], [3, 11, 18, 33, 36, 51, 53, 55, 58, 59, 63, 79, 86, 90, 92, 97], [5, 6, 13, 15, 31, 35, 52, 54, 62, 77, 82, 83, 85, 87, 88, 98, 99], [0, 1, 2, 4, 8, 9, 17, 20, 25, 27, 30, 41, 43, 64, 67, 69, 71, 75, 81, 84, 95], [37, 39, 45, 47, 49, 56, 76, 94, 96], [14, 16, 19, 22, 26, 28, 29, 34, 38, 40, 48, 50, 57, 61, 66, 72, 73, 74, 78, 91, 93]]
 
 const color = ['#ffa39e', '#ffd666', '#87e8de'] //red-3 gold-4 cyan-3; //ad user media
@@ -77,7 +78,7 @@ const getPath = (sample, node) => {
     while (!node['leaf_index']) {
         const split_feature = feature_names[node['split_feature']];
         const value = node['internal_count'];
-        path.push(split_feature + value);
+        path.push(split_feature + value); // 作为唯一ID，只用特征名会重复
 
         const split_value = node['threshold'];
         if (sample[split_feature] <= split_value) {
@@ -140,6 +141,34 @@ const getTreeSize = (trees) => {
     return treeSize;
 }
 
+const getLeafValue = (sample) => {
+    let leafValue = [];
+    for (let i = 0; i < allTrees.length; i++) {
+        let node = allTrees[i]['tree_structure'];
+
+        while (node['leaf_index'] === undefined) {
+            const split_feature = feature_names[node['split_feature']];
+            const split_value = node['threshold'];
+
+            if (sample[split_feature] <= split_value) {
+                node = node['left_child'];
+            }
+            else {
+                node = node['right_child'];
+            }
+        }
+
+        let obj = {
+            x: i,
+            y: node['leaf_value']
+        };
+        leafValue.push(obj);
+    }
+    // let allValue = leafValue.reduce((sum, cur) => sum + cur.y, 0); // 最终的概率值是通过将样本在决策树中的路径上的叶子节点的leaf_value加权求和得到的
+    // console.log('allValue:', allValue) 
+    return leafValue;
+}
+
 function ICicle(props) {
     const elementRef = useRef(null);
     const tooltipRef = useRef(null);
@@ -148,9 +177,12 @@ function ICicle(props) {
         // eslint-disable-next-line
         const sample = data5000.filter(d => d.key == props.sample);
         let streamData = null;
+        let leafValue = null;
         if (sample.length !== 0) {
             streamData = getStreamGains(sample[0]);
+            leafValue = getLeafValue(sample[0]);
         }
+        console.log('leafValue', leafValue);
 
         // 获取DOM及其宽高
         const element = d3.select(elementRef.current);
@@ -267,7 +299,7 @@ function ICicle(props) {
                         .range([0, width]);
                     tooltip
                         .style("left", xStream(i) + 10 + "px")
-                        .style("top", height / 2 + "px")
+                        .style("top", height / 2 + 20 + "px")
                         .html('Tree:' + i + '<br>' +
                             'Ad Gains:' + streamData[i].ad.toFixed(2) + '<br>' +
                             'User Gains:' + streamData[i].user.toFixed(2) + '<br>' +
@@ -292,10 +324,10 @@ function ICicle(props) {
 
             const trees_index = map.get(i);
             tree.append("text")// const cluster = 
-                .attr("x", 25)
+                .attr("x", 30)
                 .attr("y", height / 4 + textHeight * 2)
                 .style("cursor", "default")
-                .text(`Cluster${index + 1} (nums)`) // TODO: 聚类中心的树index
+                .text(`Cluster${index + 1} (${trees_index.length})`) // TODO: 聚类中心的树index
                 .on("mouseover", (event) => {
                     let coordinates = [event.offsetX, event.offsetY]
                     tooltip
@@ -328,7 +360,7 @@ function ICicle(props) {
 
         const yScale = d3.scaleLinear()
             .domain([0, d3.max(treeSize, d => d.y)])
-            .range([height / 8, textHeight]);
+            .range([height / 8, textHeight + 5]);
 
         // // 那颗线，不要也行
         // // const line = d3.line()
@@ -355,33 +387,40 @@ function ICicle(props) {
             .attr("fill-opacity", 0.5)
             .attr("d", area);
 
-        // lineSvg.append("path")
-        //     .datum(linesData[1]) // leaves
-        //     .attr("fill", "pink")
-        //     .attr("fill-opacity", 0.5)
-        //     .attr("d", area);
-
-        // lineSvg.append("path")
-        //     .datum(linesData[0]) //depth
-        //     .attr("fill", "lightblue")
-        //     .attr("fill-opacity", 0.5)
-        //     .attr("d", area);
-
         lineSvg.append("text")
             .attr("x", width - 160)
-            .attr("y", height / 8 + textHeight - 5)
+            .attr("y", height / 8 + textHeight)
             .style("text-anchor", "center")
             .text('Tree Sequence(0 ~ n-1)');
 
-        // lineSvg.append("text")
-        //     .attr("x", 5)
-        //     .attr("y", yScale(linesData[0][0].y)) //height / 8 - 20
-        //     .text('Depth');
+        lineSvg.append("text")
+            .attr("x", 5)
+            .attr("y", yScale(treeSize[0].y) - 5)
+            .text('Tree Size');
 
-        // lineSvg.append("text")
-        //     .attr("x", 5)
-        //     .attr("y", yScale(linesData[1][0].y)) //height / 8 - 5
-        //     .text('Leaves');
+        // ---------------Leaf Value--------------------
+        if (leafValue) {
+            const yScale_leaf = d3.scaleLinear()
+                .domain([0, d3.max(leafValue, d => d.y)])
+                .range([height / 8, textHeight + 10]);
+
+            const area_leaf = d3.area()
+                .x(d => xScale(d.x))
+                .y0(yScale_leaf(0))
+                .y1(d => yScale_leaf(d.y))
+                .curve(d3.curveBasis);
+
+            lineSvg.append("path")
+                .datum(leafValue) // allSize
+                .attr("fill", "lightblue")
+                .attr("fill-opacity", 0.5)
+                .attr("d", area_leaf);
+
+            lineSvg.append("text")
+                .attr("x", 5)
+                .attr("y", yScale_leaf(leafValue[0].y) + textHeight) //height / 8 - 20
+                .text('Leaf Value');
+        }
 
         // ---------------------Stream---------------------------
         if (streamData) drawStream();
@@ -413,7 +452,14 @@ function ICicle(props) {
                     d3.max(stack(streamData), d => d3.max(d, d => d[1]))])
                 .range([height / 2 - 10, 0]);
 
-            //console.log('stack(streamData):', stack(streamData))
+
+            // let yStream = d3.scaleLog()
+            //     .domain(
+            //         [d3.min(stack(streamData), d => d3.min(d, d => d[0]) + 1),
+            //         d3.max(stack(streamData), d => d3.max(d, d => d[1]))])
+            //     .range([height / 2 - 10, 0]);
+
+            // console.log('stack(streamData):', stack(streamData))
 
             // Define the area generator
             const streamArea = d3.area()
@@ -474,6 +520,41 @@ function ICicle(props) {
                         .attr("fill", d => d.height ? color[getFeatureType(feature_names[d.data.split_feature])] : "lightgrey")
                 })
         }
+
+        // ------------------ID Label、legend-----------------------
+        svg.append("text")
+            .attr("x", width - 150)
+            .attr("y", height - 30)
+            .style("text-anchor", "left")
+            .text(`Record ID: ${props.sample}`);
+
+        // 图例legend
+        const legeng_data = [
+            { color: color[0], label: "ad" },
+            { color: color[1], label: "user" },
+            { color: color[2], label: "media" }
+        ];
+
+        // 绘制图例
+        const legend = svg.append("g")
+            .selectAll("g")
+            .data(legeng_data)
+            .join("g")
+            .attr("transform", function (d, i) { return `translate(${600 + i * 80}, ${height - 50})` })
+
+        legend.append("rect")
+            .attr("x", 10)
+            .attr("y", 10)
+            .attr("width", 20)
+            .attr("height", 15)
+            .style("fill", function (d) { return d.color; });
+
+        legend.append("text")
+            .attr("x", 35)
+            .attr("y", 20)
+            .style("text-anchor", "start")
+            .text(function (d) { return d.label; });
+
     }, [props.sample])
 
     // 更改selectedFeature后联动更新相应rect的颜色类别

@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Observer, useLocalObservable } from 'mobx-react';
 import { store } from '../store/store';
 // eslint-disable-next-line
-import { allCor, inclassCor } from '../data/featureCorData';
+import { allCor, inClassCor } from '../data/featureCorData';
 
 function FeatureCorrelation() {
     const myStore = useLocalObservable(() => store);
@@ -20,7 +20,7 @@ function Net(props) {
     const elementRef = useRef(null);
     const tooltipRef = useRef(null);
     // eslint-disable-next-line
-    const [data, setData] = useState(inclassCor);
+    const [data, setData] = useState(inClassCor);//inclassCor allCor inClassCor
 
     useEffect(() => {
         // 获取DOM及其宽高
@@ -41,7 +41,10 @@ function Net(props) {
             .attr("width", width)
             .attr("height", height);
 
-        const [nodes, links] = [data.nodes, data.links];
+        let [nodes, links] = [data.nodes, data.links];
+
+        //links = links.filter(d => Math.abs(d.value) > 0.3);
+
         // const color = d3.scaleOrdinal(d3.schemeCategory10);
         const myColor = ['#ffa39e', '#ffd666', '#87e8de'] //red-3 gold-4 cyan-3
 
@@ -49,7 +52,7 @@ function Net(props) {
         const simulation = d3.forceSimulation()
             // (d) => d.id 识别id（string），而不是默认的数值 d.index，参考：https://github.com/d3/d3-force#link_id
             .force("link", d3.forceLink().id((d) => d.id))
-            .force("charge", d3.forceManyBody().strength(-8)) // 节点之间的斥力，default -30
+            .force("charge", d3.forceManyBody().strength(-5)) // 节点之间的斥力，default -30, inclass -8or10, all -50
             // .force("x", d3.forceX(width / 2, height / 2))
             // .force("y", d3.forceY(width / 2, height / 2))
             .force("center", d3.forceCenter(width / 2, height / 2));
@@ -66,8 +69,8 @@ function Net(props) {
             .on("mousedown", (event, d) => {
                 let coordinates = [event.offsetX, event.offsetY]
                 tooltip
-                    .style("left", coordinates[0] + "px")
-                    .style("top", coordinates[1] + "px")
+                    .style("left", coordinates[0] + 10 + "px")
+                    .style("top", coordinates[1] + 10 + "px")
                     .html("Link between <br>" +
                         d.source.id + "<br>" +
                         " and <br>" +
@@ -115,7 +118,11 @@ function Net(props) {
 
         // 把上面绘制出来的node和link模拟出来（+交互）
         simulation.nodes(nodes).on('tick', ticked);
-        simulation.force('link').links(links).distance(d => (1 / (Math.abs(d.value) + 1)) * 80);
+        simulation.force('link')
+            .links(links)
+            .distance(d => (1 / (Math.abs(d.value) + 1)) * 80)
+            //.distance(100)
+            .strength(d => Math.abs(d.value) * 0.8) // 链接节点之间的引力
 
         // 图例legend
         const legeng_data = [
