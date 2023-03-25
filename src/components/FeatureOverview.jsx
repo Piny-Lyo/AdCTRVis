@@ -90,7 +90,7 @@ function FeatureOverview() {
 
     return (
         <Table columns={columns} dataSource={featureOverviewData}
-            size='small' pagination={false} scroll={{ y: 560 }}
+            size='small' pagination={false} scroll={{ y: 590 }}
             onRow={() => {
                 return {
                     onClick: (event) => { // 点击行

@@ -47,7 +47,7 @@ function MyTable(props) {
             size='small' pagination={false}
             scroll={{
                 x: 2800,
-                y: 220,
+                y: 200,
             }}
             onRow={() => {
                 return {

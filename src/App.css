@@ -3,12 +3,12 @@
 }
 
 .top {
-  height: 65vh;
+  height: 68vh;
   /* 视口高度（viewprot height）的60% */
 }
 
 .bottom {
-  height: 35vh;
+  height: 32vh;
 }
 
 .ant-row {

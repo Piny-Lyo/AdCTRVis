@@ -64,7 +64,7 @@ function DataOverview() {
                 tooltip
                     .style("left", coordinates[0] + "px")
                     .style("top", coordinates[1] + "px")
-                    .html(d.label + ': ' + d.value)
+                    .html(d.label + ': ' + d.value + ` (${(d.value / all * 100).toFixed(2)}%)`)
                     .style("display", "inline-block");
                 event.target.setAttribute("opacity", 0.8);
             })

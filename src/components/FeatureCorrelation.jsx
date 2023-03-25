@@ -70,7 +70,7 @@ function Net(props) {
                 let coordinates = [event.offsetX, event.offsetY]
                 tooltip
                     .style("left", coordinates[0] + 10 + "px")
-                    .style("top", coordinates[1] + 10 + "px")
+                    .style("top", coordinates[1] + 30 + "px")
                     .html("Link between <br>" +
                         d.source.id + "<br>" +
                         " and <br>" +

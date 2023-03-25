@@ -1,5 +1,5 @@
 
-import { InputNumber, Row, Col, TreeSelect } from 'antd';
+import { InputNumber, Row, Col, TreeSelect, Button } from 'antd';
 import { selectData } from '../data/dataList';
 import { useState } from 'react';
 
@@ -8,7 +8,7 @@ function ControlPanel() {
     const [value, setValue] = useState();
 
     const style = {
-        padding: '12px 6px', //top&bottom left&right
+        padding: '5px 18px', //top&bottom left&right
         display: 'flex',
         alignItems: 'center',//cross axis
         justifyContent: 'center'//main axis (default row)
@@ -37,24 +37,37 @@ function ControlPanel() {
 
     return (
         <>
-            <Row gutter={16}>
-                <Col className="gutter-row" span={11}>
+            <Row gutter={5}>
+                <Col className="gutter-row" span={12}>
                     <div style={style}>
-                        <InputNumber addonBefore={'Max Tree Depth'} min={1} max={20} defaultValue={-1} onChange={onChange} style={{ width: '190px' }} />
+                        <InputNumber addonBefore={'num_leaves'} min={1} max={120} defaultValue={31} onChange={onChange} size='small' />
                     </div>
                 </Col>
-                <Col className="gutter-row" span={13}>
+                <Col className="gutter-row" span={12}>
                     <div style={style}>
-                        <InputNumber addonBefore={'Max Number of Leaves'} min={1} max={63} defaultValue={31} onChange={onChange} /></div>
+                        <InputNumber addonBefore={'max_depth'} min={1} max={12} defaultValue={-1} onChange={onChange} size='small' />
+                    </div>
                 </Col>
             </Row>
-            <Row gutter={16}>
-                <Col className="gutter-row" span={11}>
+            <Row gutter={5}>
+                <Col className="gutter-row" span={12}>
                     <div style={style}>
-                        <InputNumber addonBefore={'Tree Clusters (K)'} min={1} max={9} defaultValue={6} onChange={onChange} style={{ width: '190px' }} />
+                        <InputNumber addonBefore={'learning_rate'} min={0} max={1} defaultValue={0.1} onChange={onChange} size='small' />
                     </div>
                 </Col>
-                <Col className="gutter-row" span={13}>
+                <Col className="gutter-row" span={12}>
+                    <div style={style}>
+                        <InputNumber addonBefore={'n_estimators'} min={1} max={1000} defaultValue={100} onChange={onChange} size='small' />
+                    </div>
+                </Col>
+            </Row>
+            <Row gutter={5}>
+                <Col className="gutter-row" span={12}>
+                    <div style={style}>
+                        <InputNumber addonBefore={'Clusters (K)'} min={1} max={9} defaultValue={6} onChange={onChange} size='small' />
+                    </div>
+                </Col>
+                <Col className="gutter-row" span={12}>
                     <div style={style}>
                         {/* <InputNumber addonBefore={'Unselected Features'} min={1} max={9} defaultValue={6} onChange={onChange} style={{ width: '220px' }} /> */}
                         <TreeSelect
@@ -62,10 +75,10 @@ function ControlPanel() {
                             style={{ width: '100%' }}
                             value={value}
                             dropdownStyle={{
-                                maxHeight: 400,
+                                maxHeight: 300,
                                 overflow: 'auto',
                             }}
-                            placeholder="Select features to be removed"
+                            placeholder="Select features to remove" //be removed
                             allowClear
                             multiple
                             onChange={(newValue) => {
@@ -73,8 +86,25 @@ function ControlPanel() {
                                 setValue(newValue);
                             }}
                             treeData={treeData}
+                            size='small'
                         />
                     </div>
+                </Col>
+
+
+            </Row>
+            <Row gutter={10}>
+                <Col className="gutter-row" span={6}>
+                    <div style={style}><Button type="primary" size='small'> Apply </Button></div>
+                </Col>
+                <Col className="gutter-row" span={6}>
+                    <div style={style}><Button size='small'>AUC: 0.718</Button></div>
+                </Col>
+                <Col className="gutter-row" span={5}>
+                    <div style={style}><Button size='small'>AUPR: 0.720</Button></div>
+                </Col>
+                <Col className="gutter-row" span={6}>
+                    <div style={style}><Button size='small'>ACC: 0.664</Button></div>
                 </Col>
             </Row>
 

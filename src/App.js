@@ -13,7 +13,7 @@ function App() {
     <>
       <Row>
         <Col span={6}>
-          <Card title="Control Panel" style={{ height: '15vh' }}><ControlPanel /></Card>
+          <Card title="Control Panel" style={{ height: '18vh' }}><ControlPanel /></Card>
           <Card title="Data Overview" style={{ height: '50vh' }}>
             <DataOverview />
           </Card>
