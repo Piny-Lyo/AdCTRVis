@@ -19,7 +19,7 @@ function App() {
           </Card>
         </Col>
         <Col span={13}>
-          <Card title="Tree Boosting and Flow" className='top'><TreeBoosting /></Card>
+          <Card title="Tree Boosting" className='top'><TreeBoosting /></Card>
         </Col>
         <Col span={5}>
           <Card title="Feature Importance" className='top'><FeatureOverview /></Card>

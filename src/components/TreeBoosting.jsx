@@ -18,12 +18,28 @@ function TreeBoosting() {
 
 export default TreeBoosting;
 
+// 默认参数
 const centers = [60, 79, 82, 43, 49, 74]
-// const centers = [24, 4, 34, 49, 96, 73]
-
 const clusters = [[7, 10, 12, 21, 23, 24, 32, 42, 44, 46, 60, 65, 68, 70, 80, 89], [3, 11, 18, 33, 36, 51, 53, 55, 58, 59, 63, 79, 86, 90, 92, 97], [5, 6, 13, 15, 31, 35, 52, 54, 62, 77, 82, 83, 85, 87, 88, 98, 99], [0, 1, 2, 4, 8, 9, 17, 20, 25, 27, 30, 41, 43, 64, 67, 69, 71, 75, 81, 84, 95], [37, 39, 45, 47, 49, 56, 76, 94, 96], [14, 16, 19, 22, 26, 28, 29, 34, 38, 40, 48, 50, 57, 61, 66, 72, 73, 74, 78, 91, 93]]
 
+// const centers = [24, 4, 34, 49, 96, 73]
 // const clusters = [[24, 25, 26, 27, 28, 29, 31, 33, 35, 37, 39, 59, 66], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], [30, 32, 34, 36, 38, 40, 41, 42], [43, 45, 47, 49, 51, 53, 54, 56, 58, 60, 61, 63, 65, 67, 68, 70, 74, 76, 77, 79, 81, 82, 88, 92, 94, 97], [72, 78, 84, 86, 89, 90, 91, 93, 96, 98, 99], [44, 46, 48, 50, 52, 55, 57, 62, 64, 69, 71, 73, 75, 80, 83, 85, 87, 95]]
+
+// 4.2节示意效果
+// const centers = [29, 9, 38, 49, 91, 80]
+// const clusters = [[24, 25, 26, 27, 28, 29, 31, 33, 35, 37, 39, 21, 22, 23], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], [30, 32, 34, 36, 38, 40, 41, 42], [43, 45, 47, 49, 51, 53, 54, 56, 58, 60, 61, 63, 65, 67, 68, 70, 74, 76, 77, 79], [72, 78, 84, 86, 89, 90, 91, 93, 96, 98, 99, 85, 87, 95, 81, 82, 88, 92, 94, 97, 59, 66], [44, 46, 48, 50, 52, 55, 57, 62, 64, 69, 71, 73, 75, 80, 83]]
+
+// // 4.2 real last（stream lr0.02）
+// const centers = [58, 37, 30, 99, 16, 24]
+// const clusters = [[41, 43, 45, 48, 52, 56, 58, 61, 64, 66, 67, 68, 70, 72, 75, 76, 77, 79, 88, 98], [3, 5, 6, 7, 12, 13, 15, 23, 37, 46, 47, 49, 50, 53, 55, 57, 60, 65, 69, 74, 80, 81, 89, 91, 95, 96], [1, 2, 4, 8, 9, 10, 11, 22, 26, 27, 30, 33, 35, 38, 42], [44, 51, 59, 62, 63, 71, 73, 78, 82, 85, 86, 87, 90, 92, 93, 94, 97, 99], [0, 14, 16, 20, 31, 40, 54, 83, 84], [17, 18, 19, 21, 24, 25, 28, 29, 32, 34, 36, 39]]
+
+let map = new Map();
+for (let i = 0; i < centers.length; i++) {
+    map.set(centers[i], clusters[i]);
+}
+
+const sorted_centers = centers.sort((a, b) => a - b);
+console.log(sorted_centers, map);
 
 const color = ['#ffa39e', '#ffd666', '#87e8de'] //red-3 gold-4 cyan-3; //ad user media
 
@@ -206,13 +222,6 @@ function ICicle(props) {
 
         // ------------------Draw the ICicles---------------
         const n = centers.length; // 聚类中心数量
-        let map = new Map();
-        for (let i = 0; i < centers.length; i++) {
-            map.set(centers[i], clusters[i]);
-        }
-
-        const sorted_centers = centers.sort((a, b) => a - b);
-        console.log(sorted_centers, map);
 
         const treeSvg = svg.append("g");
 
@@ -392,7 +401,7 @@ function ICicle(props) {
 
         lineSvg.append("text")
             .attr("x", width - 75)
-            .attr("y", height / 8 + textHeight + 5)
+            .attr("y", height / 8 + textHeight + 12)
             .style("text-anchor", "center")
             .text('Tree Index');
 
@@ -444,7 +453,7 @@ function ICicle(props) {
 
             lineSvg.append("text")
                 .attr("x", 5)
-                .attr("y", yScale_leaf(leafValue[0].y) + textHeight) //height / 8 - 20
+                .attr("y", height / 8 - 20) // yScale_leaf(leafValue[0].y) + textHeight
                 .text('Leaf Value');
         }
 
